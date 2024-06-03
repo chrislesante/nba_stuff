@@ -5,9 +5,12 @@ INJURY REPORT SCRAPER
 """
 
 from bs4 import BeautifulSoup
+import os
 import requests
 import pandas as pd
 from datetime import date
+
+DOWNLOAD_LOC = os.path.join(os.environ.get('HOME'),'Desktop')
 
 def create_df():
     url = 'https://www.basketball-reference.com/friv/injuries.fcgi'
@@ -43,7 +46,7 @@ def create_df():
 
 def export_report(injuryDF):
     today = date.today()
-    injuryDF.to_csv(f'nbaInjuryReport{today}.csv',index=False)
+    injuryDF.to_csv(os.path.join(DOWNLOAD_LOC,f'nbaInjuryReport{today}.csv'),index=False)
 
 def main():
     injuryDF = create_df()
