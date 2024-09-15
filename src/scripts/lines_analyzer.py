@@ -50,8 +50,8 @@ def find_underdog(lines_df):
     return underdogs
 
 def main():
-    start_year = input("Enter start year: ")
-    end_year = input("Enter end year: ")
+    start_year = input("\nEnter start year: ")
+    end_year = input("\nEnter end year: ")
 
     print("\nGrabbing raw lines data...")
     lines_df = get_lines_raw_data()
@@ -63,11 +63,17 @@ def main():
     print("\nAnalyzing data...\n")
     lines = LinesAnalyzer(lines_df)
 
+    print(lines.raw)
+    print("\n\n\n")
     print(lines.coverage_summary)
     print("\n\n\n")
     print(lines.underdog_split)
     print("\n\n\n")
     print(lines.favorite_split)
+    print("\n\n\n")
+    print(lines.get_away_data("underdog"))
+    print("\n\n\n")
+    print(lines.get_home_data("favorite"))
 
 if __name__ == "__main__":
     main()

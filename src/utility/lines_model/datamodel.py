@@ -65,6 +65,7 @@ SPLIT_COLUMNS_ENUM = {
 
 class LinesAnalyzer:
     def __init__(self, lines_df: pd.DataFrame):
+        setattr(self, "raw", lines_df)
         setattr(
             self, "coverage_summary", self.__create_coverage_summary_table(lines_df)
         )
@@ -205,12 +206,8 @@ class LinesAnalyzer:
         return split_summary
     
     def __aggregate_split_data(self,lines_df: pd.DataFrame, type: str):
-        at_home_df = lines_df[
-            lines_df[type] == lines_df["home_team_abbrev"]
-        ].copy()
-        away_df = lines_df[
-            lines_df[type] == lines_df["visit_team_abbrev"]
-        ].copy()
+        at_home_df = self.get_home_data(type)
+        away_df = self.get_away_data(type)
 
         at_home_df = self.__get_splits(at_home_df, type, "home")
         away_df = self.__get_splits(away_df, type, "away")
@@ -228,3 +225,17 @@ class LinesAnalyzer:
         dog_splits = self.__aggregate_split_data(lines_df, "underdog")
 
         return fav_splits, dog_splits
+    
+    def get_home_data(self, type: str) -> pd.DataFrame:
+        at_home_df = self.raw[
+            self.raw[type] == self.raw["home_team_abbrev"]
+        ].copy()
+
+        return at_home_df
+    
+    def get_away_data(self, type: str) -> pd.DataFrame:
+        away_df = self.raw[
+            self.raw[type] == self.raw["visit_team_abbrev"]
+        ].copy()
+
+        return away_df
