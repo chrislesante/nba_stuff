@@ -64,6 +64,10 @@ def main():
     lines = LinesAnalyzer(lines_df)
 
     print(lines.coverage_summary)
+    print("\n\n\n")
+    print(lines.underdog_split)
+    print("\n\n\n")
+    print(lines.favorite_split)
 
 if __name__ == "__main__":
     main()
