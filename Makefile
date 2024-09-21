@@ -30,5 +30,12 @@ run:
 	export PYTHONPATH="$(REPO_PATH)" && \
 	$(PYTHON) src/scripts/$${script}.py
 
+locate_city:
+	@printf "\n" && \
+	printf "\nRunning /src/utility/reference/feature_engineering/location.py\n\n" && \
+	source ./.venv/bin/activate && \
+	export PYTHONPATH="$(REPO_PATH)" && \
+	$(PYTHON) /src/utility/reference/feature_engineering/location.py
+
 clean:
 	@rm -rf ./.venv

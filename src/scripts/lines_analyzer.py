@@ -29,11 +29,19 @@ def filter_seasons(lines_df, start_year, end_year):
 
     return lines_df
 
-def get_lines_raw_data():
+def get_lines_raw_data_from_web():
+    print("\nGrabbing raw lines data...")
     lines_end_point = "https://www.rotowire.com/betting/nba/tables/games-archive.php"
     lines_request = requests.get(lines_end_point)
     lines_json = json.loads(lines_request.content)
     lines_df = pd.DataFrame.from_records(lines_json)
+
+    return lines_df
+
+def get_lines_raw_data_from_local_file():
+    lines_path = input("\nEnter lines csv data file path: ")
+    print("\nGrabbing raw lines data...")
+    lines_df = pd.read_csv(lines_path)
 
     return lines_df
 
@@ -49,12 +57,25 @@ def find_underdog(lines_df):
         
     return underdogs
 
-def main():
-    start_year = input("Enter start year: ")
-    end_year = input("Enter end year: ")
+def export_data(lines_obj):
+    lines_obj.coverage_summary.sort_values(by="team", inplace=True)
+    lines_obj.coverage_summary.to_csv("coverage.csv", index=False)
+    lines_obj.underdog_split.to_csv("underdog_split.csv", index=False)
+    lines_obj.favorite_split.to_csv("favorite_split.csv", index=False)
 
-    print("\nGrabbing raw lines data...")
-    lines_df = get_lines_raw_data()
+    print("\nSummaries exported successfully!\n")
+
+
+def main():
+    start_year = input("\nEnter start year: ")
+    end_year = input("\nEnter end year: ")
+
+    source = input("\nLocal file or web? (l/return) ")
+
+    if source.upper() == "L":
+        lines_df = get_lines_raw_data_from_local_file()
+    else:
+        lines_df = get_lines_raw_data_from_web()
 
     lines_df = filter_seasons(lines_df, start_year, end_year)
 
@@ -63,11 +84,23 @@ def main():
     print("\nAnalyzing data...\n")
     lines = LinesAnalyzer(lines_df)
 
-    print(lines.coverage_summary)
-    print("\n\n\n")
-    print(lines.underdog_split)
-    print("\n\n\n")
-    print(lines.favorite_split)
+    export = input("\nExport data? (y/return) ")
+    if export.upper() == "Y":
+        export_data(lines)
+
+
+    # print(lines.raw)
+    # print("\n\n\n")
+    # print(lines.coverage_summary)
+    # print("\n\n\n")
+    # print(lines.underdog_split)
+    # print("\n\n\n")
+    # print(lines.favorite_split)
+    # print("\n\n\n")
+    # print(lines.get_away_data("underdog"))
+    # print("\n\n\n")
+    # print(lines.get_home_data("favorite"))
+
 
 if __name__ == "__main__":
     main()
