@@ -3,6 +3,12 @@ import pandas as pd
 import json
 import requests
 
+LINES_ENDPOINTS = {
+    "NBA": "https://www.rotowire.com/betting/nba/tables/games-archive.php",
+    "NFL": "https://www.rotowire.com/betting/nfl/tables/games-archive.php",
+    "MLB": "https://www.rotowire.com/betting/mlb/tables/games-archive.php"
+}
+
 def filter_seasons(lines_df, start_year, end_year):
     lines_df["season"] = lines_df["season"].apply(lambda x: int(x))
     first_season = lines_df["season"].min()
@@ -29,9 +35,9 @@ def filter_seasons(lines_df, start_year, end_year):
 
     return lines_df
 
-def get_lines_raw_data_from_web():
+def get_lines_raw_data_from_web(league: str):
     print("\nGrabbing raw lines data...")
-    lines_end_point = "https://www.rotowire.com/betting/nba/tables/games-archive.php"
+    lines_end_point = LINES_ENDPOINTS[league]
     lines_request = requests.get(lines_end_point)
     lines_json = json.loads(lines_request.content)
     lines_df = pd.DataFrame.from_records(lines_json)
@@ -65,6 +71,16 @@ def export_data(lines_obj):
 
     print("\nSummaries exported successfully!\n")
 
+def create_selection_dict(methods: list) -> dict:
+    selection_dict = {}
+    print()
+    for n, method in enumerate(methods):
+        choice = str(n + 1)
+        selection_dict[choice] = method
+        print(choice + "." + method)
+
+    
+    return selection_dict
 
 def main():
     start_year = input("\nEnter start year: ")
@@ -75,7 +91,9 @@ def main():
     if source.upper() == "L":
         lines_df = get_lines_raw_data_from_local_file()
     else:
-        lines_df = get_lines_raw_data_from_web()
+        selection_dict = create_selection_dict(LINES_ENDPOINTS.keys())
+        league = selection_dict[input("\nSelect a league to analyze: ")]
+        lines_df = get_lines_raw_data_from_web(league)
 
     lines_df = filter_seasons(lines_df, start_year, end_year)
 
