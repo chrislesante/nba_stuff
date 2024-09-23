@@ -13,6 +13,10 @@ LINES_ENDPOINTS = {
     "MLB": "https://www.rotowire.com/betting/mlb/tables/games-archive.php",
 }
 
+TODAYS_LINES = {
+    "NFL": "https://www.rotowire.com/betting/nfl/tables/nfl-games.php?"
+}
+
 
 def filter_seasons(lines_df, start_year, end_year):
     filter_df = lines_df.copy()
@@ -44,9 +48,14 @@ def filter_seasons(lines_df, start_year, end_year):
     return filter_df
 
 
-def get_lines_raw_data_from_web(league: str):
-    print("\nGrabbing raw lines data...")
-    lines_end_point = LINES_ENDPOINTS[league]
+def get_lines_raw_data_from_web(league: str, historical: bool = True) -> pd.DataFrame:
+    if historical:
+        print("\nGrabbing historical lines data...")
+        lines_end_point = LINES_ENDPOINTS[league]
+    else:
+        print("\nGrabbing todays lines...")
+        lines_end_point = TODAYS_LINES[league]
+
     lines_request = requests.get(lines_end_point)
     lines_json = json.loads(lines_request.content)
     lines_df = pd.DataFrame.from_records(lines_json)
@@ -149,32 +158,40 @@ def get_underdog_splits(lines: LinesAnalyzer):
     else:
         print(lines.underdog_split.sort_values(by=selection_dict[choice]))
 
+def choose_picks(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
+    pass
 
 def main():
     again = "Y"
     source = input("\nLocal file or web? (l/return) ")
 
+    selection_dict = create_selection_dict(LINES_ENDPOINTS.keys())
+    league = selection_dict[input("\nSelect a league to analyze: ")]
+
     if source.upper() == "L":
         lines_df = get_lines_raw_data_from_local_file()
     else:
-        selection_dict = create_selection_dict(LINES_ENDPOINTS.keys())
-        league = selection_dict[input("\nSelect a league to analyze: ")]
         lines_df = get_lines_raw_data_from_web(league)
         
     lines = process_lines_data(lines_df)
+    todays_lines = get_lines_raw_data_from_web(league, historical=False)
 
     while again.upper() == "Y":
         methods = [
+            "Get today's lines",
             "Get Coverage Report",
             "Get favorite splits",
             "Get underdog splits",
             "Export all reports",
+            "Tell me who to pick",
             "Change years",
         ]
         selection_dict = create_selection_dict(methods)
         choice = input("\nSelect an option: ")
 
-        if selection_dict[choice] == "Get Coverage Report":
+        if selection_dict[choice] == "Get today's lines":
+            print(todays_lines)
+        elif selection_dict[choice] == "Get Coverage Report":
             get_coverage_report(lines)
         elif selection_dict[choice] == "Get favorite splits":
             get_favorite_splits(lines)
@@ -182,6 +199,9 @@ def main():
             get_underdog_splits(lines)
         elif selection_dict[choice] == "Export all reports":
             export_data(lines)
+        elif selection_dict[choice] == "Tell me who to pick":
+            picks = choose_picks(lines, todays_lines)
+            print(picks)
         elif selection_dict[choice] == "Change years":
             lines = process_lines_data(lines_df)
 
