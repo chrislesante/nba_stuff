@@ -29,6 +29,21 @@ TABLES = {
         "total_times_favorite_home",
         "hit_percentage_as_favorite_home",
     ],
+    "over_under_splits": [
+        "team",
+        "ppg_home",
+        "opp_ppg_home",
+        "combined_ppg_home",
+        "ppg_away",
+        "opp_ppg_away",
+        "combined_ppg_away",
+        "average_ou_home",
+        "over_hit_home",
+        "over_hit_home_percentage",
+        "over_hit_away",
+        "average_ou_away",
+        "over_hit_away_percentage",
+    ],
 }
 
 SPLIT_COLUMNS_ENUM = {
@@ -74,6 +89,7 @@ class LinesAnalyzer:
 
         setattr(self, "underdog_split", dog_splits)
         setattr(self, "favorite_split", fav_splits)
+        setattr(self, "over_under_splits", self.__get_over_under_splits(lines_df))
 
     def __aggregate_favorites_data(self, lines_df: pd.DataFrame) -> pd.DataFrame:
         favorites_by_team_df = lines_df.copy()
@@ -184,11 +200,9 @@ class LinesAnalyzer:
             .sort_values(by=f"{type}_covered", ascending=False)
         )
 
-        split_summary[f"total_times_{type}_{home_away}"] = (
-            split_summary[f"{type}"].apply(
-                lambda x: int(total_times_dict[x])
-            )
-        )
+        split_summary[f"total_times_{type}_{home_away}"] = split_summary[
+            f"{type}"
+        ].apply(lambda x: int(total_times_dict[x]))
 
         split_summary["hit_percentage"] = (
             (split_summary[f"{type}_covered"])
@@ -204,8 +218,8 @@ class LinesAnalyzer:
         )
 
         return split_summary
-    
-    def __aggregate_split_data(self,lines_df: pd.DataFrame, type: str):
+
+    def __aggregate_split_data(self, lines_df: pd.DataFrame, type: str):
         at_home_df = self.get_home_data(type)
         away_df = self.get_away_data(type)
 
@@ -214,7 +228,9 @@ class LinesAnalyzer:
 
         split_df = at_home_df.merge(away_df, how="inner", on="team")
 
-        split_df = split_df.sort_values(by=f"hit_percentage_as_{type}_away", ascending=False)
+        split_df = split_df.sort_values(
+            by=f"hit_percentage_as_{type}_away", ascending=False
+        )
 
         split_df = split_df[TABLES[f"{type}_split"]]
 
@@ -225,17 +241,68 @@ class LinesAnalyzer:
         dog_splits = self.__aggregate_split_data(lines_df, "underdog")
 
         return fav_splits, dog_splits
-    
+
+    def __aggregate_ou_split_details(self, home_visit, ou_df: pd.DataFrame):
+        if home_visit == "home":
+            opp = "visit"
+            home_away = "home"
+        else:
+            home_away = "away"
+            opp = "home"
+
+        new_df = ou_df.groupby(by=f"{home_visit}_team_abbrev", as_index=False).mean(
+            numeric_only=True
+        )
+
+        total_times_hit = ou_df.groupby(
+            by=f"{home_visit}_team_abbrev", as_index=False
+        ).sum()
+
+        new_df = new_df.rename(
+            {
+                f"{home_visit}_team_abbrev": "team",
+                f"{home_visit}_team_score": f"ppg_{home_away}",
+                f"{opp}_team_score": f"opp_ppg_{home_away}",
+                "game_over_under": f"average_ou_{home_away}",
+                "over_hit": f"over_hit_{home_away}_percentage",
+                "under_hit": f"under_hit_{home_away}_percentage",
+            },
+            axis=1,
+        )
+
+        total_times_hit = total_times_hit.rename(
+            {
+                f"{home_visit}_team_abbrev": "team",
+                "over_hit": f"over_hit_{home_away}",
+                "under_hit": f"under_hit_{home_away}",
+            },
+            axis=1,
+        )
+
+        merge_df = new_df.merge(total_times_hit, on="team", how="inner")
+
+        return merge_df
+
+    def __get_over_under_splits(self, lines_df: pd.DataFrame) -> pd.DataFrame:
+        ou_df = lines_df.copy()
+        ou_df_home = self.__aggregate_ou_split_details("home", ou_df)
+        ou_df_away = self.__aggregate_ou_split_details("visit", ou_df)
+
+        ou_df_merged = ou_df_home.merge(ou_df_away, on="team", how="inner")
+
+        ou_df_merged["combined_ppg_home"] = ou_df_merged["ppg_home"] + ou_df_merged["opp_ppg_home"]
+        ou_df_merged["combined_ppg_away"] = ou_df_merged["ppg_away"] + ou_df_merged["opp_ppg_away"]
+
+        ou_df_merged = ou_df_merged[TABLES["over_under_splits"]]
+
+        return ou_df_merged
+
     def get_home_data(self, type: str) -> pd.DataFrame:
-        at_home_df = self.raw[
-            self.raw[type] == self.raw["home_team_abbrev"]
-        ].copy()
+        at_home_df = self.raw[self.raw[type] == self.raw["home_team_abbrev"]].copy()
 
         return at_home_df
-    
+
     def get_away_data(self, type: str) -> pd.DataFrame:
-        away_df = self.raw[
-            self.raw[type] == self.raw["visit_team_abbrev"]
-        ].copy()
+        away_df = self.raw[self.raw[type] == self.raw["visit_team_abbrev"]].copy()
 
         return away_df
