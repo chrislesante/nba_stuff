@@ -6,9 +6,11 @@ TABLES = {
         "covered_as_favorite",
         "total_times_favorite",
         "fav_hit_percentage",
+        "avg_line_cov_favorite",
         "covered_as_dog",
         "total_times_underdog",
         "dog_hit_percentage",
+        "avg_line_cov_underdog",
         "overall_hit_percentage",
     ],
     "underdog_split": [
@@ -16,18 +18,22 @@ TABLES = {
         "covered_as_underdog_away",
         "total_times_underdog_away",
         "hit_percentage_as_underdog_away",
+        "avg_line_cov_underdog_away",
         "covered_as_underdog_home",
         "total_times_underdog_home",
         "hit_percentage_as_underdog_home",
+        "avg_line_cov_underdog_home",
     ],
     "favorite_split": [
         "team",
         "covered_as_favorite_away",
         "total_times_favorite_away",
         "hit_percentage_as_favorite_away",
+        "avg_line_cov_favorite_away",
         "covered_as_favorite_home",
         "total_times_favorite_home",
         "hit_percentage_as_favorite_home",
+        "avg_line_cov_favorite_home",
     ],
     "over_under_splits": [
         "team",
@@ -46,6 +52,8 @@ TABLES = {
     ],
 }
 
+#STRING_COLUMNS = ["season","week","game_date","game_time","home_team_id","home_team_stats_id","home_team_abbrev","visit_team_id","visit_team_stats_id","visit_team_abbrev","home_team_score","visit_team_score","game_over_under","line","surface","weather_icon","temperature","precip_probability","precip_type","wind_speed","wind_bearing","kickoff","month","start","favorite","score","total","spread","over_hit","under_hit","favorite_covered","underdog_covered","name"]
+
 SPLIT_COLUMNS_ENUM = {
     "favorite": {
         "home": {
@@ -53,12 +61,15 @@ SPLIT_COLUMNS_ENUM = {
             "favorite_covered": "covered_as_favorite_home",
             "hit_percentage": "hit_percentage_as_favorite_home",
             "total_times_favorite": "total_times_favorite_home",
+            "avg_line_cov_favorite": "avg_line_cov_favorite_home",
         },
         "away": {
             "favorite": "team",
             "favorite_covered": "covered_as_favorite_away",
             "hit_percentage": "hit_percentage_as_favorite_away",
             "total_times_favorite": "total_times_favorite_away",
+            "avg_line_cov_favorite": "avg_line_cov_favorite_away",
+            "spread": "avg_line_cov_favorite_away"
         },
     },
     "underdog": {
@@ -67,12 +78,15 @@ SPLIT_COLUMNS_ENUM = {
             "underdog_covered": "covered_as_underdog_home",
             "hit_percentage": "hit_percentage_as_underdog_home",
             "total_times_underdog": "total_times_underdog_home",
+            "avg_line_cov_underdog": "avg_line_cov_underdog_home",
         },
         "away": {
             "underdog": "team",
             "underdog_covered": "covered_as_underdog_away",
             "hit_percentage": "hit_percentage_as_underdog_away",
             "total_times_underdog": "total_times_underdog_away",
+            "avg_line_cov_underdog": "avg_line_cov_underdog_away",
+            "spread": "avg_line_cov_underdog_away",
         },
     },
 }
@@ -80,6 +94,7 @@ SPLIT_COLUMNS_ENUM = {
 
 class LinesAnalyzer:
     def __init__(self, lines_df: pd.DataFrame):
+        #lines_df = self.__set_data_types(lines_df)
         setattr(self, "raw", lines_df)
         setattr(
             self, "coverage_summary", self.__create_coverage_summary_table(lines_df)
@@ -90,6 +105,17 @@ class LinesAnalyzer:
         setattr(self, "underdog_split", dog_splits)
         setattr(self, "favorite_split", fav_splits)
         setattr(self, "over_under_splits", self.__get_over_under_splits(lines_df))
+    
+    def __set_data_types(self, lines_df):
+        for column in lines_df.columns:
+            if lines_df.dtypes[column] == object:
+                try:
+                    lines_df[column].apply(lambda x: 0 if x == "" else x)
+                    lines_df[column].apply(lambda x: float(x))
+                except ValueError:
+                    continue            
+
+        return lines_df  
 
     def __aggregate_favorites_data(self, lines_df: pd.DataFrame) -> pd.DataFrame:
         favorites_by_team_df = lines_df.copy()
@@ -97,6 +123,10 @@ class LinesAnalyzer:
         total_times_favored_dict = favorites_by_team_df.value_counts(
             "favorite"
         ).to_dict()
+
+        spread_avg_df = favorites_by_team_df.groupby(
+            by="favorite", as_index=False
+        ).mean(numeric_only=True)
 
         fav_covered_summary = (
             favorites_by_team_df.groupby(by="favorite", as_index=False)
@@ -113,12 +143,20 @@ class LinesAnalyzer:
             / (fav_covered_summary["total_times_favorite"])
         ) * 100
 
+        fav_covered_summary = fav_covered_summary.merge(
+            spread_avg_df, on="favorite", how="inner", suffixes=(None, "_y")
+        )
+
         return fav_covered_summary
 
     def __aggregate_underdog_data(self, lines_df: pd.DataFrame) -> pd.DataFrame:
         underdogs_by_team_df = lines_df.copy()
 
         total_times_dog_dict = underdogs_by_team_df.value_counts("underdog").to_dict()
+
+        spread_avg_df = underdogs_by_team_df.groupby(
+            by="underdog", as_index=False
+        ).mean(numeric_only=True)
 
         dog_covered_summary = (
             underdogs_by_team_df.groupby(by="underdog", as_index=False)
@@ -135,6 +173,10 @@ class LinesAnalyzer:
             / (dog_covered_summary["total_times_underdog"])
         ) * 100
 
+        dog_covered_summary = dog_covered_summary.merge(
+            spread_avg_df, on="underdog", how="inner", suffixes=(None, "_y")
+        )
+
         return dog_covered_summary
 
     def __rename_fav_dog_columns(self, fav_df: pd.DataFrame, dog_df: pd.DataFrame):
@@ -143,6 +185,7 @@ class LinesAnalyzer:
                 "underdog_covered": "covered_as_dog",
                 "hit_percentage": "dog_hit_percentage",
                 "underdog": "team",
+                "spread_y": "avg_line_cov_underdog",
             },
             axis=1,
         )
@@ -152,6 +195,7 @@ class LinesAnalyzer:
                 "favorite_covered": "covered_as_favorite",
                 "hit_percentage": "fav_hit_percentage",
                 "favorite": "team",
+                "spread_y": "avg_line_cov_favorite",
             },
             axis=1,
         )
@@ -226,7 +270,7 @@ class LinesAnalyzer:
         at_home_df = self.__get_splits(at_home_df, type, "home")
         away_df = self.__get_splits(away_df, type, "away")
 
-        split_df = at_home_df.merge(away_df, how="inner", on="team")
+        split_df = at_home_df.merge(away_df, how="inner", on="team", suffixes=(None,"_y"))
 
         split_df = split_df.sort_values(
             by=f"hit_percentage_as_{type}_away", ascending=False
@@ -290,8 +334,12 @@ class LinesAnalyzer:
 
         ou_df_merged = ou_df_home.merge(ou_df_away, on="team", how="inner")
 
-        ou_df_merged["combined_ppg_home"] = ou_df_merged["ppg_home"] + ou_df_merged["opp_ppg_home"]
-        ou_df_merged["combined_ppg_away"] = ou_df_merged["ppg_away"] + ou_df_merged["opp_ppg_away"]
+        ou_df_merged["combined_ppg_home"] = (
+            ou_df_merged["ppg_home"] + ou_df_merged["opp_ppg_home"]
+        )
+        ou_df_merged["combined_ppg_away"] = (
+            ou_df_merged["ppg_away"] + ou_df_merged["opp_ppg_away"]
+        )
 
         ou_df_merged = ou_df_merged[TABLES["over_under_splits"]]
 

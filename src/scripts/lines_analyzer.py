@@ -15,6 +15,7 @@ LINES_ENDPOINTS = {
 
 TODAYS_LINES = {
     "NFL": "https://www.rotowire.com/betting/nfl/tables/nfl-games.php?",
+    "NBA": "https://www.rotowire.com/betting/nba/tables/nba-games.php?",
     "keep_columns": [
         "gameID",
         "gameDate",
@@ -216,12 +217,12 @@ def main():
         lines_df = get_lines_raw_data_from_web(league)
 
     lines = process_lines_data(lines_df)
-    todays_lines = get_lines_raw_data_from_web(league, historical=False)
-    todays_lines = todays_lines[TODAYS_LINES["keep_columns"]]
+    #todays_lines = get_lines_raw_data_from_web(league, historical=False)
+    #todays_lines = todays_lines[TODAYS_LINES["keep_columns"]]
 
     while again.upper() == "Y":
         methods = [
-            "Get today's lines",
+            # "Get today's lines",
             "Get Coverage Report",
             "Get favorite splits",
             "Get underdog splits",
@@ -235,7 +236,7 @@ def main():
         choice = input("\nSelect an option: ")
 
         if choice not in valid_selections:
-            print("\nPlease select a valid selection\n")
+            print("\nPlease enter a valid selection\n")
         elif selection_dict[choice] == "Get today's lines":
             table_header()
             print(todays_lines)
