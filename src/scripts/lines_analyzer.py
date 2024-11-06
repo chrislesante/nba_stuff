@@ -15,6 +15,7 @@ LINES_ENDPOINTS = {
 
 TODAYS_LINES = {
     "NFL": "https://www.rotowire.com/betting/nfl/tables/nfl-games.php?",
+    "NBA": "https://www.rotowire.com/betting/nba/tables/nba-games.php?",
     "keep_columns": [
         "gameID",
         "gameDate",
