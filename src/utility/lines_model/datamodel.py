@@ -37,11 +37,9 @@ TABLES = {
         "ppg_away",
         "opp_ppg_away",
         "combined_ppg_away",
-        #"average_ou_home",
         "over_hit_home",
         "over_hit_home_percentage",
         "over_hit_away",
-        #"average_ou_away",
         "over_hit_away_percentage",
     ],
 }
@@ -293,7 +291,7 @@ class LinesAnalyzer:
         ou_df_merged["combined_ppg_home"] = ou_df_merged["ppg_home"] + ou_df_merged["opp_ppg_home"]
         ou_df_merged["combined_ppg_away"] = ou_df_merged["ppg_away"] + ou_df_merged["opp_ppg_away"]
 
-        ou_df_merged.to_csv("ou_df_merged.csv")
+        ou_df_merged.to_csv("ou_df_merged")
         ou_df_merged = ou_df_merged[TABLES["over_under_splits"]]
 
         return ou_df_merged

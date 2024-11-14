@@ -203,7 +203,32 @@ def table_header():
 def choose_picks(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
     table_header()
     table_header()
-    
+
+def export_html(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
+    html_string = '''
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                    <title>DataFrames</title>
+                    </head>
+                    <body>
+                    <h1>Coverage Summary</h1>
+                    ''' + lines.coverage_summary.to_html() + '''
+                    <h1>Underdog Splits</h1>
+                    ''' + lines.underdog_split.to_html() + '''
+                    <h1>Favorite Splits</h1>
+                    ''' + lines.favorite_split.to_html() + '''
+                    <h1>Over Under Splits</h1>
+                    ''' + lines.over_under_splits.to_html() + '''
+                    <h1>Todays Lines</h1>
+                    ''' + todays_lines.to_html() + '''
+                    </body>
+                    </html>
+                    '''
+
+    with open('lines.html', 'w') as f:
+        f.write(html_string)
+
 def main():
     again = "Y"
     source = input("\nLocal file or web? (l/return) ")
@@ -229,6 +254,7 @@ def main():
             "Get over/under splits",
             "Export all reports",
             "Tell me who to pick",
+            "Export Tables as HTML",
             "Change years",
         ]
         selection_dict = create_selection_dict(methods)
@@ -254,6 +280,8 @@ def main():
         elif selection_dict[choice] == "Tell me who to pick":
             picks = choose_picks(lines, todays_lines)
             print(picks)
+        elif selection_dict[choice] == "Export Tables as HTML":
+            export_html(lines, todays_lines)
         elif selection_dict[choice] == "Change years":
             lines = process_lines_data(lines_df)
 
