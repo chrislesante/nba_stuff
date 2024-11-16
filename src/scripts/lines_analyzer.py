@@ -1,4 +1,5 @@
 from utility.lines_model.datamodel import LinesAnalyzer
+from utility.reference import sql
 import pandas as pd
 import json
 import requests
@@ -229,6 +230,9 @@ def export_html(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
     with open('lines.html', 'w') as f:
         f.write(html_string)
 
+def update_sql_table(lines: LinesAnalyzer):
+    sql.export_df_to_sql(lines.raw)
+
 def main():
     again = "Y"
     source = input("\nLocal file or web? (l/return) ")
@@ -255,6 +259,7 @@ def main():
             "Export all reports",
             "Tell me who to pick",
             "Export Tables as HTML",
+            "Update Lines SQL table",
             "Change years",
         ]
         selection_dict = create_selection_dict(methods)
@@ -282,6 +287,8 @@ def main():
             print(picks)
         elif selection_dict[choice] == "Export Tables as HTML":
             export_html(lines, todays_lines)
+        elif selection_dict[choice] == "Update Lines SQL table":
+            update_sql_table(lines)
         elif selection_dict[choice] == "Change years":
             lines = process_lines_data(lines_df)
 

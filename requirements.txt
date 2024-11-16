@@ -1,6 +1,7 @@
 beautifulsoup4
 pandas
 requests
+getpass
 datetime
 psycopg==3.2.3
 SQLAlchemy==2.0.36
