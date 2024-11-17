@@ -2,5 +2,6 @@ beautifulsoup4
 pandas
 requests
 datetime
+nba_api
 psycopg==3.2.3
 SQLAlchemy==2.0.36

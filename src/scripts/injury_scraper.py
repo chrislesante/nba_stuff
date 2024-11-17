@@ -12,7 +12,7 @@ from datetime import date
 
 DOWNLOAD_LOC = os.path.join(os.environ.get('HOME'),'Desktop')
 
-def create_df():
+def grab_injury_report():
     url = 'https://www.basketball-reference.com/friv/injuries.fcgi'
     page = requests.get(url)
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -49,7 +49,7 @@ def export_report(injuryDF):
     injuryDF.to_csv(os.path.join(DOWNLOAD_LOC,f'nbaInjuryReport{today}.csv'),index=False)
 
 def main():
-    injuryDF = create_df()
+    injuryDF = grab_injury_report()
     export_report(injuryDF)
     
 if __name__ == "__main__":

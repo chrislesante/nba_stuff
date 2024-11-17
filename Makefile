@@ -35,7 +35,22 @@ locate_city:
 	printf "\nRunning /src/utility/reference/feature_engineering/location.py\n\n" && \
 	source ./.venv/bin/activate && \
 	export PYTHONPATH="$(REPO_PATH)" && \
-	$(PYTHON) /src/utility/reference/feature_engineering/location.py
+	$(PYTHON) src/utility/reference/feature_engineering/location.py
+
+update_logs:
+	@printf "\n" && \
+	printf "\nRunning /src/scripts/update_gamelogs.py\n\n" && \
+	source ./.venv/bin/activate && \
+	export PYTHONPATH="$(REPO_PATH)" && \
+	$(PYTHON) src/scripts/update_gamelogs.py
+
+
+revert_logs:
+	@printf "\n" && \
+	printf "\nRunning /src/scripts/update_gamelogs.py\n\n" && \
+	source ./.venv/bin/activate && \
+	export PYTHONPATH="$(REPO_PATH)" && \
+	$(PYTHON) src/scripts/revert_gamelogs.py
 
 clean:
 	@rm -rf ./.venv
