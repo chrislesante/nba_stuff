@@ -44,7 +44,7 @@ def export_df_to_sql(
                 valid = True
             else:
                 print("\nEnter a valid option.")
-    
+
     df.to_sql(
         name=table_name,
         con=get_connection(),
@@ -55,7 +55,10 @@ def export_df_to_sql(
 
     print(f"\n{table_name} successfully imported into {schema}.")
 
-def convert_sql_to_df(table_name: str | None = None, schema: str | None = None, query: bool = False):
+
+def convert_sql_to_df(
+    table_name: str | None = None, schema: str | None = None, query: bool = False
+):
     if (table_name == None) and (query == True):
         table_name = input("\nEnter table name: ")
 
@@ -63,6 +66,8 @@ def convert_sql_to_df(table_name: str | None = None, schema: str | None = None, 
         schema = input("\nEnter schema where table is present: ")
 
     if query == False:
-        return pd.read_sql_table(table_name=table_name, con=get_connection(), schema=schema)
+        return pd.read_sql_table(
+            table_name=table_name, con=get_connection(), schema=schema
+        )
     else:
         return pd.read_sql(sql=query, con=get_connection())

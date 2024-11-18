@@ -52,5 +52,12 @@ revert_logs:
 	export PYTHONPATH="$(REPO_PATH)" && \
 	$(PYTHON) src/scripts/revert_gamelogs.py
 
+lines:
+	@printf "\n" && \
+	printf "\nRunning /src/scripts/update_gamelogs.py\n\n" && \
+	source ./.venv/bin/activate && \
+	export PYTHONPATH="$(REPO_PATH)" && \
+	$(PYTHON) src/scripts/lines_analyzer.py
+
 clean:
 	@rm -rf ./.venv
