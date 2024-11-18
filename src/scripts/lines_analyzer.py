@@ -62,7 +62,7 @@ def filter_seasons(lines_df, start_year, end_year):
         (filter_df["season"] >= start_year) & (filter_df["season"] <= end_year)
     ]
 
-    return filter_df
+    return filter_df, start_year, end_year
 
 
 def get_lines_raw_data_from_web(league: str, historical: bool = True) -> pd.DataFrame:
@@ -127,14 +127,14 @@ def process_lines_data(lines_df: pd.DataFrame):
     start_year = input("\nEnter start year: ")
     end_year = input("\nEnter end year: ")
 
-    filter_df = filter_seasons(lines_df, start_year, end_year)
+    filter_df, start_year, end_year = filter_seasons(lines_df, start_year, end_year)
 
     filter_df["underdog"] = find_underdog(filter_df)
 
     print("\nAnalyzing data...\n")
     lines = LinesAnalyzer(filter_df)
 
-    return lines
+    return lines, start_year, end_year
 
 def get_coverage_report(lines: LinesAnalyzer):
     table_header()
@@ -233,6 +233,11 @@ def export_html(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
 def update_sql_table(lines: LinesAnalyzer):
     sql.export_df_to_sql(lines.raw)
 
+def get_new_coverage_report(lines, start_year, end_year):
+    coverage_summary = LinesAnalyzer.get_new_coverage_summary(lines.raw, start_year, end_year)
+    print(coverage_summary)
+    coverage_summary.to_csv("new_coverage_report.csv", index=False)
+
 def main():
     again = "Y"
     source = input("\nLocal file or web? (l/return) ")
@@ -245,9 +250,12 @@ def main():
     else:
         lines_df = get_lines_raw_data_from_web(league)
 
-    lines = process_lines_data(lines_df)
+    lines, start_year, end_year = process_lines_data(lines_df)
     todays_lines = get_lines_raw_data_from_web(league, historical=False)
-    todays_lines = todays_lines[TODAYS_LINES["keep_columns"]]
+    try:
+        todays_lines = todays_lines[TODAYS_LINES["keep_columns"]]
+    except KeyError:
+        todays_lines = "No lines left for the day."
 
     while again.upper() == "Y":
         methods = [
@@ -260,6 +268,7 @@ def main():
             "Tell me who to pick",
             "Export Tables as HTML",
             "Update Lines SQL table",
+            "Get new coverage summary",
             "Change years",
         ]
         selection_dict = create_selection_dict(methods)
@@ -289,8 +298,10 @@ def main():
             export_html(lines, todays_lines)
         elif selection_dict[choice] == "Update Lines SQL table":
             update_sql_table(lines)
+        elif selection_dict[choice] == "Get new coverage summary":
+            get_new_coverage_report(lines, start_year, end_year)
         elif selection_dict[choice] == "Change years":
-            lines = process_lines_data(lines_df)
+            lines, start_year, end_year = process_lines_data(lines_df)
 
 
 if __name__ == "__main__":
