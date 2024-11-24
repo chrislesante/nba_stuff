@@ -6,6 +6,8 @@ from utility.reference import sql
 import datetime
 import pandas as pd
 import time
+import json
+import requests
 import os
 
 TODAY = date.today()
@@ -51,15 +53,24 @@ def get_new_logs(last_game_date):
     new_game_logs = []
 
     player_dict = players.get_active_players()
-
+ 
     for x in player_dict:
-        print(f"\n\tGrabbing gamelogs for player {x['id']}")
-        new_game_logs.append(
-            playergamelog.PlayerGameLog(
-                player_id=x["id"], date_from_nullable=last_game_date
-            )
-        )
-        time.sleep(0.200)
+        for attempt in range(0,5):
+            try:
+                print(f"\n\tGrabbing gamelogs for player {x['full_name']}")
+                new_game_logs.append(
+                    playergamelog.PlayerGameLog(
+                        player_id=x["id"], date_from_nullable=last_game_date
+                    )
+                )
+                time.sleep(0.500)
+                break
+            except json.decoder.JSONDecodeError:
+                print("\n\t\tError, trying again...")
+                time.sleep(0.5)
+            except requests.exceptions.ReadTimeout:
+                print("\n\t\tError, trying again...")
+                time.sleep(3)
 
     return new_game_logs
 
