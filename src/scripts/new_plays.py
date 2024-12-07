@@ -16,13 +16,17 @@ def get_play_by_play_data():
     play_by_play["gameId"] = play_by_play["gameId"].apply(lambda x: str(x).lstrip("00"))
     play_by_play_games = play_by_play["gameId"].unique()
 
+    del logs
+
     new_ids = [x for x in game_ids if x not in play_by_play_games]
+
+    print(f"\n{len(new_ids)} new game ids found!")
 
     print("\nGrabbing new play by play data...")
     
     for n, id_ in enumerate(new_ids):
         for attempt in range(0, 5):
-            print(f"\n\tGetting playbyplay data for {id_}")
+            print(f"\n\tGetting playbyplay data for {id_} - {n + 1} of {len(new_ids)}")
             try:
                 try:
                     play = pp.PlayByPlayV3(game_id=id_)
@@ -35,11 +39,13 @@ def get_play_by_play_data():
                 break
             except json.decoder.JSONDecodeError:
                 print("\n\t\tError, trying again...")
-                time.sleep(0.5)
+                time.sleep(1)
             except requests.exceptions.ReadTimeout:
                 print("\n\t\tError, trying again...")
                 time.sleep(3)
-    
+
+    play_by_play.drop_duplicates(inplace=True)
+
     return play_by_play
 
 def main():
