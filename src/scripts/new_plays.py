@@ -6,35 +6,47 @@ import json
 import requests
 
 def get_play_by_play_data():
+    print("\nLoading gamelogs df...")
     logs = sql.convert_sql_to_df(table_name="player_gamelogs", schema="gamelogs")
 
-    game_ids = logs["Game_ID"].unique()
+    print("\nLoading play by play df...")
+    play_by_play = sql.convert_sql_to_df(table_name="play_by_play", schema="gamelogs")
 
-    print("\nGrabbing play by play data...")
+    game_ids = logs["Game_ID"].unique()
+    play_by_play["gameId"] = play_by_play["gameId"].apply(lambda x: str(x).lstrip("00"))
+    play_by_play_games = play_by_play["gameId"].unique()
+
+    del logs
+
+    new_ids = [x for x in game_ids if x not in play_by_play_games]
+
+    print(f"\n{len(new_ids)} new game ids found!")
+
+    print("\nGrabbing new play by play data...")
     
-    for n, id_ in enumerate(game_ids):
+    for n, id_ in enumerate(new_ids):
         for attempt in range(0, 5):
-            print(f"\n\tGetting playbyplay data for {id_}")
+            print(f"\n\tGetting playbyplay data for {id_} - {n + 1} of {len(new_ids)}")
             try:
                 try:
                     play = pp.PlayByPlayV3(game_id=id_)
                 except IndexError:
                     play = pp.PlayByPlayV3(game_id=f"00{id_}")
+
                 df = pd.DataFrame(columns=play.play_by_play.get_dict()["headers"], data=play.play_by_play.get_dict()["data"])
-                if n == 0:
-                    export = df.copy()
-                else:
-                    export = pd.concat([export, df])
+                play_by_play = pd.concat([play_by_play, df])
                 time.sleep(0.3)
                 break
             except json.decoder.JSONDecodeError:
                 print("\n\t\tError, trying again...")
-                time.sleep(0.5)
+                time.sleep(1)
             except requests.exceptions.ReadTimeout:
                 print("\n\t\tError, trying again...")
                 time.sleep(3)
-    
-    return export
+
+    play_by_play.drop_duplicates(inplace=True)
+
+    return play_by_play
 
 def main():
     export = get_play_by_play_data()

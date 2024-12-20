@@ -5,10 +5,10 @@ import getpass
 import os
 
 FLATFILE_PATH = f"{os.environ['HOME']}/Desktop/nba_flatfiles/"
-USER = "postgres"
+USER = "christianlesante"
 PASSWORD = getpass.getpass("\nEnter SQL password: ")
 HOST = "localhost"
-PORT = 5433
+PORT = 5432
 DATABASE = "NBA"
 
 

@@ -44,6 +44,13 @@ update_logs:
 	export PYTHONPATH="$(REPO_PATH)" && \
 	$(PYTHON) src/scripts/update_gamelogs.py
 
+plays:
+	@printf "\n" && \
+	printf "\nRunning /src/scripts/new_plays.py\n\n" && \
+	source ./.venv/bin/activate && \
+	export PYTHONPATH="$(REPO_PATH)" && \
+	$(PYTHON) src/scripts/new_plays.py
+
 
 revert_logs:
 	@printf "\n" && \
@@ -54,7 +61,7 @@ revert_logs:
 
 lines:
 	@printf "\n" && \
-	printf "\nRunning /src/scripts/update_gamelogs.py\n\n" && \
+	printf "\nRunning /src/scripts/lines_analyzer.py\n\n" && \
 	source ./.venv/bin/activate && \
 	export PYTHONPATH="$(REPO_PATH)" && \
 	$(PYTHON) src/scripts/lines_analyzer.py
