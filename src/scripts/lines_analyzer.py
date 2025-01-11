@@ -136,6 +136,7 @@ def process_lines_data(lines_df: pd.DataFrame):
 
     return lines, start_year, end_year
 
+
 def get_coverage_report(lines: LinesAnalyzer):
     table_header()
     methods = ["fav_hit_percentage", "dog_hit_percentage", "overall_hit_percentage"]
@@ -150,8 +151,9 @@ def get_coverage_report(lines: LinesAnalyzer):
         )
     else:
         print(lines.coverage_summary.sort_values(by=selection_dict[choice]))
-    
+
     table_header()
+
 
 def get_favorite_splits(lines: LinesAnalyzer):
     table_header()
@@ -168,6 +170,7 @@ def get_favorite_splits(lines: LinesAnalyzer):
 
     table_header()
 
+
 def get_underdog_splits(lines: LinesAnalyzer):
     table_header()
     methods = ["hit_percentage_as_underdog_away", "hit_percentage_as_underdog_home"]
@@ -183,6 +186,7 @@ def get_underdog_splits(lines: LinesAnalyzer):
 
     table_header()
 
+
 def get_over_under_splits(lines: LinesAnalyzer):
     table_header()
     filter_methods = ["over_hit_home_percentage", "over_hit_away_percentage"]
@@ -191,22 +195,29 @@ def get_over_under_splits(lines: LinesAnalyzer):
     descending = input("\nDescending or ascending order (d/return): ")
     if descending.upper() == "D":
         print(
-            lines.over_under_splits.sort_values(by=selection_dict[choice], ascending=False)
+            lines.over_under_splits.sort_values(
+                by=selection_dict[choice], ascending=False
+            )
         )
     else:
         print(lines.over_under_splits.sort_values(by=selection_dict[choice]))
-    
+
     table_header()
+
 
 def table_header():
     print("\n**********************************************************\n")
 
+
 def choose_picks(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
     table_header()
+    print('This option is not yet implemented.')
     table_header()
 
+
 def export_html(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
-    html_string = '''
+    html_string = (
+        """
                     <!DOCTYPE html>
                     <html>
                     <head>
@@ -214,27 +225,42 @@ def export_html(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
                     </head>
                     <body>
                     <h1>Coverage Summary</h1>
-                    ''' + lines.coverage_summary.to_html() + '''
+                    """
+        + lines.coverage_summary.to_html()
+        + """
                     <h1>Underdog Splits</h1>
-                    ''' + lines.underdog_split.to_html() + '''
+                    """
+        + lines.underdog_split.to_html()
+        + """
                     <h1>Favorite Splits</h1>
-                    ''' + lines.favorite_split.to_html() + '''
+                    """
+        + lines.favorite_split.to_html()
+        + """
                     <h1>Over Under Splits</h1>
-                    ''' + lines.over_under_splits.to_html() + '''
+                    """
+        + lines.over_under_splits.to_html()
+        + """
                     <h1>Todays Lines</h1>
-                    ''' + todays_lines.to_html() + '''
+                    """
+        + todays_lines.to_html()
+        + """
                     </body>
                     </html>
-                    '''
+                    """
+    )
 
-    with open('lines.html', 'w') as f:
+    with open("lines.html", "w") as f:
         f.write(html_string)
+
 
 def update_sql_table(lines: LinesAnalyzer):
     sql.export_df_to_sql(lines.raw)
 
+
 def get_new_coverage_report(lines, start_year, end_year):
-    coverage_summary = LinesAnalyzer.get_new_coverage_summary(lines.raw, start_year, end_year)
+    coverage_summary = LinesAnalyzer.get_new_coverage_summary(
+        lines.raw, start_year, end_year
+    )
     print(coverage_summary)
     coverage_summary.to_csv("new_coverage_report.csv", index=False)
 
@@ -270,6 +296,7 @@ def main():
             "Update Lines SQL table",
             "Get new coverage summary",
             "Change years",
+            "Exit"
         ]
         selection_dict = create_selection_dict(methods)
         valid_selections = selection_dict.keys()
@@ -288,7 +315,7 @@ def main():
         elif selection_dict[choice] == "Get underdog splits":
             get_underdog_splits(lines)
         elif selection_dict[choice] == "Get over/under splits":
-            get_over_under_splits(lines)  
+            get_over_under_splits(lines)
         elif selection_dict[choice] == "Export all reports":
             export_data(lines, todays_lines)
         elif selection_dict[choice] == "Tell me who to pick":
@@ -302,6 +329,13 @@ def main():
             get_new_coverage_report(lines, start_year, end_year)
         elif selection_dict[choice] == "Change years":
             lines, start_year, end_year = process_lines_data(lines_df)
+        elif selection_dict[choice] == "Exit":
+            confirm = input("\nAre you sure? (y/return) ")
+            if confirm.upper() == "Y":
+                table_header()
+                print("\nGoodbye!\n")
+                table_header()
+                break
 
 
 if __name__ == "__main__":

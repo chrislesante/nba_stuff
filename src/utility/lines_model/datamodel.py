@@ -1,6 +1,8 @@
 import pandas as pd
 from utility.reference import sql
-from utility.reference.reference import TEAMS
+from nba_api.stats.static import teams
+
+TEAMS = [x['abbreviation'] for x in teams.get_teams()]
 
 TABLES = {
     "coverage_summary": [
