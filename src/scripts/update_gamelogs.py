@@ -29,7 +29,7 @@ MONTHS = {
 
 def get_current_gamelogs():
     print("\nGrabbing current gamelogs...")
-    return sql.convert_sql_to_df(table_name="player_gamelogs", schema="gamelogs")
+    return sql.convert_sql_to_df(table_name="player_gamelogs_v2", schema="gamelogs")
 
 
 def find_latest_game_date(current_gamelog_df):
@@ -105,7 +105,7 @@ def convert_new_logs_to_df(new_logs):
         ACTIVE_PLAYERS_DF, how="inner", left_on="Player_ID", right_on="id"
     ).drop(columns=["id", "first_name", "last_name"])
 
-    new_logs_df.rename({'full_name':'player_name'},inplace=True)
+    new_logs_df.rename({'full_name':'player_name'}, axis=1, inplace=True)
     
     new_logs_df.sort_values(by=['GAME_DATE','TEAM'],ascending=False,inplace=True)
 
@@ -169,7 +169,9 @@ def main():
 
     export_flatfiles(current_gamelog_df, new_logs_df)
 
-    sql.export_df_to_sql(df=updated_logs, table_name="player_gamelogs", schema="gamelogs", behavior="replace")
+    del current_gamelog_df
+
+    sql.export_df_to_sql(df=updated_logs, table_name="player_gamelogs_v2", schema="gamelogs", behavior="replace")
 
 
 if __name__ == "__main__":
