@@ -20,7 +20,7 @@ def get_play_by_play_data(game_batch):
                     play = pp.PlayByPlayV3(game_id=f"00{id_}")
 
                 df = pd.DataFrame(columns=play.play_by_play.get_dict()["headers"], data=play.play_by_play.get_dict()["data"])
-                time.sleep(0.3)
+                time.sleep(0.6)
                 break
             except json.decoder.JSONDecodeError:
                 print("\n\t\tError, trying again...")
@@ -35,17 +35,14 @@ def main():
     print("\nLoading gamelogs df...")
     logs = sql.convert_sql_to_df(table_name="player_gamelogs_v2", schema="gamelogs")
 
-    # print("\nLoading play by play df...")
-    # play_by_play = sql.convert_sql_to_df(table_name="play_by_play", schema="gamelogs")
+    print("\nLoading play by play df...")
+    play_by_play = sql.convert_sql_to_df(table_name="play_by_play", schema="gamelogs")
 
     game_ids = logs["Game_ID"].apply(lambda x: str(x).lstrip("00")).unique()
-    # play_by_play["gameId"] = play_by_play["gameId"].apply(lambda x: str(x).lstrip("00"))
-    # play_by_play_games = play_by_play["gameId"].unique()
-
-    play_by_play_games = []
-
+    play_by_play["gameId"] = play_by_play["gameId"].apply(lambda x: str(x).lstrip("00"))
+    play_by_play_games = play_by_play["gameId"].unique()
     
-    # del play_by_play
+    del play_by_play
     del logs
 
     new_ids = [x for x in game_ids if x not in play_by_play_games]
