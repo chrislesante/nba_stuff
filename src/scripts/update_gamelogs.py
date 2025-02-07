@@ -10,6 +10,9 @@ import json
 import requests
 import os
 
+HEADERS = sql.convert_sql_to_df(query='SELECT column_name \
+                                FROM information_schema.columns \
+                                WHERE table_name = \'player_gamelogs_v2\';')['column_name'].to_list()
 TODAY = date.today()
 ACTIVE_PLAYERS_DF = pd.DataFrame.from_records(players.get_active_players())
 MONTHS = {
@@ -29,7 +32,7 @@ MONTHS = {
 
 def get_current_gamelogs():
     print("\nGrabbing current gamelogs...")
-    return sql.convert_sql_to_df(table_name="player_gamelogs_v2", schema="gamelogs")
+    return sql.convert_sql_to_df(table='player_game_logs_v2', schema='gamelogs')
 
 
 def find_latest_game_date(current_gamelog_df):
@@ -161,7 +164,7 @@ def main():
     new_logs = get_new_logs(latest_game_date)
     new_logs_df = convert_new_logs_to_df(new_logs)
 
-    new_logs_df = new_logs_df[current_gamelog_df.columns]
+    new_logs_df = new_logs_df[HEADERS]
 
     updated_logs = pd.concat([current_gamelog_df, new_logs_df])
 

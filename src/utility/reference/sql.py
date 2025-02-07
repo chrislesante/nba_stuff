@@ -59,10 +59,10 @@ def export_df_to_sql(
 def convert_sql_to_df(
     table_name: str | None = None, schema: str | None = None, query: bool = False
 ):
-    if (table_name == None) and (query == True):
+    if (table_name == None) and (query == False):
         table_name = input("\nEnter table name: ")
 
-    if (schema == None) and (query == True):
+    if (schema == None) and (query == False):
         schema = input("\nEnter schema where table is present: ")
 
     if query == False:
