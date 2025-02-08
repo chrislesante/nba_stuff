@@ -32,7 +32,7 @@ MONTHS = {
 
 def get_current_gamelogs():
     print("\nGrabbing current gamelogs...")
-    return sql.convert_sql_to_df(table='player_game_logs_v2', schema='gamelogs')
+    return sql.convert_sql_to_df(table_name='player_gamelogs_v2', schema='gamelogs')
 
 
 def find_latest_game_date(current_gamelog_df):
