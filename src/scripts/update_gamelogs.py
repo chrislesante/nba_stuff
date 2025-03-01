@@ -3,12 +3,15 @@ from nba_api.stats.static import players
 from nba_api.stats.endpoints import playergamelog
 from datetime import date
 from utility.reference import sql
+from utility.logger import get_struct_logger
 import datetime
 import pandas as pd
 import time
 import json
 import requests
 import os
+
+log = get_struct_logger()
 
 HEADERS = sql.convert_sql_to_df(query='SELECT column_name \
                                 FROM information_schema.columns \
@@ -31,12 +34,12 @@ MONTHS = {
 }
 
 def get_current_gamelogs():
-    print("\nGrabbing current gamelogs...")
+    log.info("Grabbing current gamelogs...")
     return sql.convert_sql_to_df(table_name='player_gamelogs_v2', schema='gamelogs')
 
 
 def find_latest_game_date(current_gamelog_df):
-    print("\nFinding last gamedate...")
+    log.info("Finding last gamedate...")
 
     last_date = pd.to_datetime(
         current_gamelog_df["GAME_DATE"].max()
@@ -51,7 +54,7 @@ def find_latest_game_date(current_gamelog_df):
 
 
 def get_new_logs(last_game_date):
-    print("\nGrabbing new gamelogs...")
+    log.info("Grabbing new gamelogs...")
 
     new_game_logs = []
 
@@ -60,7 +63,7 @@ def get_new_logs(last_game_date):
     for x in player_dict:
         for attempt in range(0,5):
             try:
-                print(f"\n\tGrabbing gamelogs for player {x['full_name']}")
+                log.info("Grabbing gamelogs", player_name=x['full_name'])
                 new_game_logs.append(
                     playergamelog.PlayerGameLog(
                         player_id=x["id"], date_from_nullable=last_game_date
@@ -68,11 +71,11 @@ def get_new_logs(last_game_date):
                 )
                 time.sleep(0.500)
                 break
-            except json.decoder.JSONDecodeError:
-                print("\n\t\tError, trying again...")
+            except json.decoder.JSONDecodeError as e:
+                log.error("Error, trying again...", e=e, attempt=attempt)
                 time.sleep(0.5)
-            except requests.exceptions.ReadTimeout:
-                print("\n\t\tError, trying again...")
+            except requests.exceptions.ReadTimeout as e:
+                log.error("Error, trying again...", e=e, attempt=attempt)
                 time.sleep(3)
 
     return new_game_logs
@@ -156,7 +159,7 @@ def export_flatfiles(current_gamelog_df: pd.DataFrame, new_logs_df: pd.DataFrame
 
     new_logs_df.to_csv(f"{download_path}/new_gamelogs.csv", index=False)
 
-    print(f"\nFlatfiles exported to {sql.FLATFILE_PATH}")
+    log.info(f"\nFlatfiles exported to {sql.FLATFILE_PATH}")
 
 def main():
     current_gamelog_df = get_current_gamelogs()
@@ -174,8 +177,9 @@ def main():
 
     del current_gamelog_df
 
+    log.info('Exporting to sql db...')
     sql.export_df_to_sql(df=updated_logs, table_name="player_gamelogs_v2", schema="gamelogs", behavior="replace")
-
+    log.info('Export successful.')
 
 if __name__ == "__main__":
     main()
