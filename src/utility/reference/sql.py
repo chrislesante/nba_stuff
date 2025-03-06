@@ -2,13 +2,16 @@ import psycopg as ps
 import pandas as pd
 from sqlalchemy import create_engine
 import getpass
+from dotenv import load_dotenv
 import os
 
+load_dotenv()
+
 FLATFILE_PATH = f"{os.environ['HOME']}/Desktop/nba_flatfiles/"
-USER = "christianlesante"
+USER = os.environ["sql_username"]
 PASSWORD = getpass.getpass("\nEnter SQL password: ")
-HOST = "localhost"
-PORT = 5432
+HOST = os.environ["sql_host"]
+PORT = os.environ["sql_port"]
 DATABASE = "NBA"
 
 
@@ -18,6 +21,7 @@ def get_connection():
             USER, PASSWORD, HOST, PORT, DATABASE
         )
     )
+
 
 def export_df_to_sql(
     df: pd.DataFrame,

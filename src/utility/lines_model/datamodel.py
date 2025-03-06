@@ -2,7 +2,7 @@ import pandas as pd
 from utility.reference import sql
 from nba_api.stats.static import teams
 
-TEAMS = [x['abbreviation'] for x in teams.get_teams()]
+TEAMS = [x["abbreviation"] for x in teams.get_teams()]
 
 TABLES = {
     "coverage_summary": [
@@ -309,7 +309,9 @@ class LinesAnalyzer:
         return ou_df_merged
 
     def get_new_coverage_summary(lines, start_year, end_year):
-        sql.export_df_to_sql(df=lines, table_name="lines", schema="general", behavior="replace")
+        sql.export_df_to_sql(
+            df=lines, table_name="lines", schema="general", behavior="replace"
+        )
 
         coverage_summary = pd.DataFrame(
             columns=[
@@ -324,49 +326,49 @@ class LinesAnalyzer:
             ]
         )
         for team in TEAMS:
-            query = f'\
-        WITH coverage_summary as (\
-                    SELECT\
-                        \'{team}\' AS "team",\
-                        (CASE WHEN "visit_team_abbrev" = \'{team}\' THEN \'away\' ELSE \'home\' END) AS "home_away",\
-                        (CASE WHEN "favorite" = \'{team}\' THEN \'favorite\' ELSE \'underdog\' END) AS "fav_dog",\
-                        (CASE WHEN\
-                            (("favorite_covered" = 1\
-                            AND \
-                            (CASE WHEN "favorite" = \'{team}\' THEN \'favorite\' ELSE \'underdog\' END) = \'favorite\') \
-                        OR \
-                            ("favorite_covered" = 0 \
-                            AND \
-                            (CASE WHEN "favorite" = \'{team}\' THEN \'favorite\' ELSE \'underdog\' END) = \'underdog\')) \
-                                THEN \'covered\' ELSE \'failed\' END) AS "result",\
-                        ROUND(AVG("spread")::numeric, 2) as "average_spread",\
-                        ROUND(stddev_samp("spread")::numeric, 2) as "std_spread",\
-                        COUNT(*) AS "total_games"\
-                    FROM general.lines\
-                    WHERE\
-                        "season"::numeric >= {str(start_year)} AND "season"::numeric <= {str(end_year)}\
-                    AND\
-                        ((visit_team_abbrev = \'{team}\')\
-                        OR\
-                        (home_team_abbrev = \'{team}\'))\
-                    AND (\
-                        (("favorite" = \'{team}\')\
-                        OR\
-                        ("underdog" = \'{team}\'))\
-                    )\
-                    GROUP BY "team", "home_away", "fav_dog", "result"\
-                    ORDER BY "home_away" DESC, "fav_dog"\
-                    )\
-                    SELECT *, \
-                    (CASE WHEN "fav_dog" = \'underdog\' THEN ("average_spread" - "std_spread") \
-                    ELSE ("average_spread" + "std_spread") END) as "1_std_away" \
-                    FROM coverage_summary;'
-            
+            query = f"""
+        WITH coverage_summary as (
+                    SELECT
+                        '{team}' AS "team",
+                        (CASE WHEN "visit_team_abbrev" = '{team}' THEN 'away' ELSE 'home' END) AS "home_away",
+                        (CASE WHEN "favorite" = '{team}' THEN 'favorite' ELSE 'underdog' END) AS "fav_dog",
+                        (CASE WHEN
+                            (("favorite_covered" = 1
+                            AND 
+                            (CASE WHEN "favorite" = '{team}' THEN 'favorite' ELSE 'underdog' END) = 'favorite') 
+                        OR 
+                            ("favorite_covered" = 0 
+                            AND 
+                            (CASE WHEN "favorite" = '{team}' THEN 'favorite' ELSE 'underdog' END) = 'underdog')) 
+                                THEN 'covered' ELSE 'failed' END) AS "result",
+                        ROUND(AVG("spread")::numeric, 2) as "average_spread",
+                        ROUND(stddev_samp("spread")::numeric, 2) as "std_spread",
+                        COUNT(*) AS "total_games"
+                    FROM general.lines
+                    WHERE
+                        "season"::numeric >= {str(start_year)} AND "season"::numeric <= {str(end_year)}
+                    AND
+                        ((visit_team_abbrev = '{team}')
+                        OR
+                        (home_team_abbrev = '{team}'))
+                    AND (
+                        (("favorite" = '{team}')
+                        OR
+                        ("underdog" = '{team}'))
+                    )
+                    GROUP BY "team", "home_away", "fav_dog", "result"
+                    ORDER BY "home_away" DESC, "fav_dog"
+                    )
+        SELECT *,
+        (CASE WHEN "fav_dog" = 'underdog' THEN ("average_spread" - "std_spread")
+        ELSE ("average_spread" + "std_spread") END) as "1_std_away"
+        FROM coverage_summary;"""
+
             team_summary = sql.convert_sql_to_df(
                 table_name="lines", schema="general", query=query
             )
             coverage_summary = pd.concat([coverage_summary, team_summary])
-    
+
         return coverage_summary
 
     def get_home_data(self, type: str) -> pd.DataFrame:

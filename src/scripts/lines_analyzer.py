@@ -211,7 +211,7 @@ def table_header():
 
 def choose_picks(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
     table_header()
-    print('This option is not yet implemented.')
+    print("This option is not yet implemented.")
     table_header()
 
 
@@ -264,6 +264,7 @@ def get_new_coverage_report(lines, start_year, end_year):
     print(coverage_summary)
     coverage_summary.to_csv("new_coverage_report.csv", index=False)
 
+
 def main():
     again = "Y"
     source = input("\nLocal file or web? (l/return) ")
@@ -296,7 +297,7 @@ def main():
             "Update Lines SQL table",
             "Get new coverage summary",
             "Change years",
-            "Exit"
+            "Exit",
         ]
         selection_dict = create_selection_dict(methods)
         valid_selections = selection_dict.keys()

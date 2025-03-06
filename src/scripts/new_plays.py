@@ -6,30 +6,33 @@ import json
 import requests
 import math
 
-COLUMNS = ['gameId',
-            'actionNumber',
-            'clock',
-            'period',
-            'teamId',
-            'teamTricode',
-            'personId',
-            'playerName',
-            'playerNameI',
-            'xLegacy',
-            'yLegacy',
-            'shotDistance',
-            'shotResult',
-            'isFieldGoal',
-            'scoreHome',
-            'scoreAway',
-            'pointsTotal',
-            'location',
-            'description',
-            'actionType',
-            'subType',
-            'videoAvailable',
-            'shotValue',
-            'actionId']
+COLUMNS = [
+    "gameId",
+    "actionNumber",
+    "clock",
+    "period",
+    "teamId",
+    "teamTricode",
+    "personId",
+    "playerName",
+    "playerNameI",
+    "xLegacy",
+    "yLegacy",
+    "shotDistance",
+    "shotResult",
+    "isFieldGoal",
+    "scoreHome",
+    "scoreAway",
+    "pointsTotal",
+    "location",
+    "description",
+    "actionType",
+    "subType",
+    "videoAvailable",
+    "shotValue",
+    "actionId",
+]
+
 
 def get_play_by_play_data(game_batch, columns):
 
@@ -48,10 +51,14 @@ def get_play_by_play_data(game_batch, columns):
                 except IndexError:
                     play = pp.PlayByPlayV3(game_id=f"00{id_}")
 
-                staging_df = pd.concat([staging_df, pd.DataFrame(
-                    columns=columns,
-                    data=play.play_by_play.get_dict()["data"]
-                )])
+                staging_df = pd.concat(
+                    [
+                        staging_df,
+                        pd.DataFrame(
+                            columns=columns, data=play.play_by_play.get_dict()["data"]
+                        ),
+                    ]
+                )
                 time.sleep(0.6)
                 break
             except json.decoder.JSONDecodeError:
@@ -72,14 +79,14 @@ def main():
 
     # the nba only began tracking play by play data in 1996
 
-    log_query = 'SELECT DISTINCT(\"Game_ID\") FROM gamelogs.player_gamelogs_v2 \
-                WHERE CAST(\"SEASON_ID\" AS INTEGER) >= 21996;'
-    
+    log_query = 'SELECT DISTINCT("Game_ID") FROM gamelogs.player_gamelogs_v2 \
+                WHERE CAST("SEASON_ID" AS INTEGER) >= 21996;'
+
     logs = sql.convert_sql_to_df(query=log_query)
 
     print("\nLoading play by play df...")
 
-    pbp_query = 'SELECT DISTINCT(\"gameId\") FROM gamelogs.play_by_play;'
+    pbp_query = 'SELECT DISTINCT("gameId") FROM gamelogs.play_by_play;'
 
     play_by_play = sql.convert_sql_to_df(query=pbp_query)
 
