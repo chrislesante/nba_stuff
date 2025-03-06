@@ -1,12 +1,7 @@
-from nba_api.stats.static import players
-from nba_api.stats.static import teams
 from nba_api.stats.endpoints import playergamelog
-from nba_api.stats.endpoints import BoxScoreSummaryV2
 import pandas as pd
 import numpy as np
 import time
-from datetime import date
-import datetime
 import math
 from utility.reference import sql
 import json
@@ -16,8 +11,9 @@ pd.options.mode.chained_assignment = None
 
 PLAYER_DF = sql.convert_sql_to_df("all_historical_players", "general")
 HEADERS = playergamelog.PlayerGameLog(
-        player_id=PLAYER_DF.loc[0, "PERSON_ID"]
-    ).get_dict()["resultSets"][0]["headers"]
+    player_id=PLAYER_DF.loc[0, "PERSON_ID"]
+).get_dict()["resultSets"][0]["headers"]
+
 
 def scrape_game_logs(player_df, seasons):
 
@@ -37,7 +33,7 @@ def scrape_game_logs(player_df, seasons):
                     game_logs.extend(
                         playergamelog.PlayerGameLog(
                             player_id=row["PERSON_ID"], season=n
-                        ).get_dict()['resultSets'][0]['rowSet']
+                        ).get_dict()["resultSets"][0]["rowSet"]
                     )
                     time.sleep(1)
                     break
@@ -50,15 +46,19 @@ def scrape_game_logs(player_df, seasons):
 
     game_log_df = pd.DataFrame(columns=HEADERS, data=game_logs)
 
-    game_log_df['TEAM'] = game_log_df['MATCHUP'].apply(lambda x: x.split()[0])
-    game_log_df['OPPONENT'] = game_log_df['MATCHUP'].apply(lambda x: x.split()[-1])
-    game_log_df['HOME/AWAY'] = game_log_df['MATCHUP'].apply(lambda x: "AWAY" if x.split()[1] == "@" else "HOME")
+    game_log_df["TEAM"] = game_log_df["MATCHUP"].apply(lambda x: x.split()[0])
+    game_log_df["OPPONENT"] = game_log_df["MATCHUP"].apply(lambda x: x.split()[-1])
+    game_log_df["HOME/AWAY"] = game_log_df["MATCHUP"].apply(
+        lambda x: "AWAY" if x.split()[1] == "@" else "HOME"
+    )
 
     game_log_df = game_log_df.drop(columns=["VIDEO_AVAILABLE", "MATCHUP"])
-    
-    player_map = players.set_index('PERSON_ID')
 
-    game_log_df['player_name'] = game_log_df['Player_ID'].map(player_map['DISPLAY_FIRST_LAST'].to_dict())
+    player_map = players.set_index("PERSON_ID")
+
+    game_log_df["player_name"] = game_log_df["Player_ID"].map(
+        player_map["DISPLAY_FIRST_LAST"].to_dict()
+    )
 
     game_log_df.sort_values(by=["GAME_DATE", "TEAM"], ascending=False, inplace=True)
 
@@ -68,7 +68,9 @@ def scrape_game_logs(player_df, seasons):
 
 
 def main():
-    seasons = [n for n in range(2019, 2025)]
+    # The 3pt line was introduced into the NBA in the 1979 season
+    
+    seasons = [n for n in range(1979, 2025)]
     number_of_batches = math.ceil(len(seasons) / 5)
 
     for x in range(0, number_of_batches):

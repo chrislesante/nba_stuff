@@ -4,6 +4,7 @@ import sys
 import logging
 from pythonjsonlogger import jsonlogger
 
+
 def get_struct_logger():
     # Configure structlog processors
     processors = [
@@ -36,7 +37,9 @@ def get_struct_logger():
     json_handler.setFormatter(json_formatter)
 
     # Create a logger for console output
-    console_handler = logging.StreamHandler(sys.stderr) # or sys.stdout depending on preference
+    console_handler = logging.StreamHandler(
+        sys.stderr
+    )  # or sys.stdout depending on preference
     console_formatter = structlog.stdlib.ProcessorFormatter(
         processor=structlog.dev.ConsoleRenderer(),
         foreign_pre_chain=console_processors,
@@ -48,7 +51,7 @@ def get_struct_logger():
         processors=processors,
         logger_factory=structlog.stdlib.LoggerFactory(),
         wrapper_class=structlog.stdlib.BoundLogger,
-        #cache_logger_on_first_access=True,
+        # cache_logger_on_first_access=True,
     )
 
     # Get a logger instance
