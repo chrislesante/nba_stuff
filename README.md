@@ -57,4 +57,4 @@ The `utility/reference/sql.py` script is there to make interacting with the post
 
 ## Visuals
 
-![Alt text](https://datawrapper.dwcdn.net/k4ecb/2/)
+[3 Pointers in the 3 Point Era](https://datawrapper.dwcdn.net/k4ecb/2/)
