@@ -54,3 +54,8 @@ The **lines_analyzer.py** script is only meant for high-level analysis and shoul
 ## sql.py
 
 The `utility/reference/sql.py` script is there to make interacting with the postgres database within python scripts much simpler. The **convert_sql_to_df** function pulls data from the database into a pandas dataframe while the **export_df_to_sql** function pushes data from a pandas dataframe to the database. 
+
+## Visuals
+
+<iframe title="3 Pointers in the 3 Point Era" aria-label="Interactive line chart" id="datawrapper-chart-k4ecb" src="https://datawrapper.dwcdn.net/k4ecb/2/" scrolling="no" frameborder="0" style="width: 0; min-width: 100% !important; border: none;" height="445" data-external="1"></iframe><script type="text/javascript">!function(){"use strict";window.addEventListener("message",(function(a){if(void 0!==a.data["datawrapper-height"]){var e=document.querySelectorAll("iframe");for(var t in a.data["datawrapper-height"])for(var r=0;r<e.length;r++)if(e[r].contentWindow===a.source){var i=a.data["datawrapper-height"][t]+"px";e[r].style.height=i}}}))}();
+</script>
