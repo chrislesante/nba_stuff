@@ -9,6 +9,7 @@ import requests
 
 pd.options.mode.chained_assignment = None
 
+START_SEASON = 1979 # The 3pt line was introduced into the NBA in the 1979 season
 PLAYER_DF = sql.convert_sql_to_df("all_historical_players", "general")
 HEADERS = playergamelog.PlayerGameLog(
     player_id=PLAYER_DF.loc[0, "PERSON_ID"]
@@ -68,9 +69,7 @@ def scrape_game_logs(player_df, seasons):
 
 
 def main():
-    # The 3pt line was introduced into the NBA in the 1979 season
-    
-    seasons = [n for n in range(1979, 2025)]
+    seasons = [n for n in range(START_SEASON, 2025)]
     number_of_batches = math.ceil(len(seasons) / 5)
 
     for x in range(0, number_of_batches):
