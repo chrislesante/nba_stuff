@@ -20,9 +20,11 @@ My local database is currently comprised of two schemas: **general** and **gamel
 
 Set up a _.env_ file at the top level of the repo that contains the following variables:
 
-`sql_username=[YOUR POSTGRES SERVER USERNAME]`
-`sql_port=[THE PORT NUMBER WHERE YOUR POSTGRES SERVER IS CONNECTED]`
-`sql_host=[YOUR POSTGRES SERVER HOST NAME]`
+```
+sql_username=[YOUR POSTGRES SERVER USERNAME]
+sql_port=[THE PORT NUMBER WHERE YOUR POSTGRES SERVER IS CONNECTED]
+sql_host=[YOUR POSTGRES SERVER HOST NAME]
+```
 
 The variables above do not necessarily contain sensitive information, but I prefer to conceal my personal configurations with environment variables. With updates to the repo that require the use of arguments containing sensitive information, it is best to store them in this _.env_ file and invoke them using `os.environ[VARIABLE]`. The _.env_ file is included in the _.gitignore_ file to ensure sensitive data is not pushed to github.
 
