@@ -131,10 +131,10 @@ def process_lines_data(lines_df: pd.DataFrame):
 
     filter_df["underdog"] = find_underdog(filter_df)
 
-    print("\nAnalyzing data...\n")
-    lines = LinesAnalyzer(filter_df)
+    # print("\nAnalyzing data...\n")
+    # lines = LinesAnalyzer(filter_df)
 
-    return lines, start_year, end_year
+    return filter_df, start_year, end_year
 
 
 def get_coverage_report(lines: LinesAnalyzer):
@@ -254,7 +254,7 @@ def export_html(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
 
 
 def update_sql_table(lines: LinesAnalyzer):
-    sql.export_df_to_sql(lines.raw)
+    sql.export_df_to_sql(lines)
 
 
 def get_new_coverage_report(lines, start_year, end_year):
@@ -278,9 +278,10 @@ def main():
         lines_df = get_lines_raw_data_from_web(league)
 
     lines, start_year, end_year = process_lines_data(lines_df)
-    todays_lines = get_lines_raw_data_from_web(league, historical=False)
+    #todays_lines = get_lines_raw_data_from_web(league, historical=False)
     try:
-        todays_lines = todays_lines[TODAYS_LINES["keep_columns"]]
+        pass
+        #todays_lines = todays_lines[TODAYS_LINES["keep_columns"]]
     except KeyError:
         todays_lines = "No lines left for the day."
 

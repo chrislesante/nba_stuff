@@ -12,7 +12,7 @@ USER = os.environ["sql_username"]
 PASSWORD = getpass.getpass("\nEnter SQL password: ")
 HOST = os.environ["sql_host"]
 PORT = os.environ["sql_port"]
-DATABASE = "NBA"
+DATABASE = "MLB"
 
 
 def get_connection():
