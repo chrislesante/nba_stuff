@@ -9,9 +9,7 @@ My name is Chris and I am a data engineer/analyst. This is my personal repo for 
 My local database is currently comprised of two schemas: **general** and **gamelogs**.
 
 `gamelogs`: contains two tables
-
     * **play_by_play** - contains play by play data going back to 1996 (when the NBA began recording play by play data). The data becomes significantly more robust in the 2013-2014 season, when Second-Spectrum began tracking advanced on court data. (sourced from NBA API)
-    
     * **player_gamelogs_v2** - this is the second version of the table, as the name implies, and it contains every player's individual gamelog going back to the 1979 season (which is when the 3pt line was introduced to the NBA). If you wanted to extract all gamelogs going back to a different season, you can change the `START_SEASON` global variable in `get_all_gamelogs.py`, to the season of your choice, and run the script. (sourced from NBA API)
 
 `general`: contains two tables
