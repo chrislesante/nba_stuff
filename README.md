@@ -9,12 +9,13 @@ My name is Chris and I am a data engineer/analyst. This is my personal repo for 
 My local database is currently comprised of two schemas: **general** and **gamelogs**.
 
 `gamelogs`: contains two tables
-    • **play_by_play** - contains play by play data going back to 1996 (when the NBA began recording play by play data). The data becomes significantly more robust in the 2013-2014 season, when Second-Spectrum began tracking advanced on court data. (sourced from NBA API)
-    • **player_gamelogs_v2** - this is the second version of the table, as the name implies, and it contains every player's individual gamelog going back to the 1979 season (which is when the 3pt line was introduced to the NBA). If you wanted to extract all gamelogs going back to a different season, you can change the `START_SEASON` global variable in `get_all_gamelogs.py`, to the season of your choice, and run the script. (sourced from NBA API)
+    * **play_by_play** - contains play by play data going back to 1996 (when the NBA began recording play by play data). The data becomes significantly more robust in the 2013-2014 season, when Second-Spectrum began tracking advanced on court data. (sourced from NBA API)
+    * **player_gamelogs_v2** - this is the second version of the table, as the name implies, and it contains every player's individual gamelog going back to the 1979 season (which is when the 3pt line was introduced to the NBA). If you wanted to extract all gamelogs going back to a different season, you can change the `START_SEASON` global variable in `get_all_gamelogs.py`, to the season of your choice, and run the script. (sourced from NBA API)
 
 `general`: contains two tables
-    • **all_historical_players** - contains bio/career info for all players in NBA history (sourced from NBA API)
-    • **lines** - contains lines data (spread, over/under, game totals, etc.) going back to the 2017 season (sourced from rotowire).
+    * **all_historical_players** - contains bio/career info for all players in NBA history (sourced from NBA API)
+    * **lines** - contains lines data (spread, over/under, game totals, etc.) going back to the 2017 season (sourced from rotowire).
+    * **champions** - contains all historical NBA champions along with the year they were awarded and their opponent.
 
 ## Getting started
 
@@ -38,15 +39,15 @@ Afterwards, there are many different _make targets_ that execute different opera
 
 Here is a description of the make targets:
 
-`make run`: will prompt the user for a script name inside the repo to run. Once a script name is entered, that script will run.
+* `make run`: will prompt the user for a script name inside the repo to run. Once a script name is entered, that script will run.
 
-`make update_logs`: runs **update_gamelogs.py**, which downloads new gamelogs to the **player_gamelogs** table.
+* `make update_logs`: runs **update_gamelogs.py**, which downloads new gamelogs to the **player_gamelogs** table.
 
-`make plays`: runs **new_plays.py**, which downloads new play by play data to the **play_by_play** table.
+* `make plays`: runs **new_plays.py**, which downloads new play by play data to the **play_by_play** table.
 
-`make revert_logs`: runs **revert_gamelogs.py**, which will revert the gamelogs table to a previous version of it from an inputted flatfile path.
+* `make revert_logs`: runs **revert_gamelogs.py**, which will revert the gamelogs table to a previous version of it from an inputted flatfile path.
 
-`make lines`: runs the **lines_analyzer.py** script. This is an interactive script that pulls betting data from rotowire and automates high-level analysis as well as providing options for varying data exports.
+* `make lines`: runs the **lines_analyzer.py** script. This is an interactive script that pulls betting data from rotowire and automates high-level analysis as well as providing options for varying data exports.
 
 
 ## Noteworthy
