@@ -56,7 +56,7 @@ The **lines_analyzer.py** script is only meant for high-level analysis and shoul
 
 ## sql.py
 
-The `utility/reference/sql.py` script is there to make interacting with the postgres database within python scripts much simpler. The **convert_sql_to_df** function pulls data from the database into a pandas dataframe while the **export_df_to_sql** function pushes data from a pandas dataframe to the database. 
+The `utility/reference/sql.py` script is there to make interacting with the postgres database within python scripts much simpler as well as preprocessing for machine learning models much less arduous. The **convert_sql_to_df** function pulls data from the database into a pandas dataframe while the **export_df_to_sql** function pushes data from a pandas dataframe to the database. The **fetch_aggregate_betting_data** joins and aggregates data from the _lines_, _player_gamelogs_v2_, and _all_historical_players_ tables to provide interesting test metrics and helpful evaluation fields for machine learning models.
 
 ## Visuals
 
