@@ -15,7 +15,6 @@ LINES_ENDPOINTS = {
 }
 
 TODAYS_LINES = {
-    "NFL": "https://www.rotowire.com/betting/nfl/tables/nfl-games.php?",
     "NBA": "https://www.rotowire.com/betting/nba/tables/nba-games.php?",
     "keep_columns": [
         "gameID",
@@ -79,15 +78,6 @@ def get_lines_raw_data_from_web(league: str, historical: bool = True) -> pd.Data
 
     return lines_df
 
-
-def get_lines_raw_data_from_local_file():
-    lines_path = input("\nEnter lines csv data file path: ")
-    print("\nGrabbing historical lines data...")
-    lines_df = pd.read_csv(lines_path)
-
-    return lines_df
-
-
 def find_underdog(lines_df):
     underdogs = []
     for n, row in lines_df.iterrows():
@@ -124,17 +114,13 @@ def create_selection_dict(methods: list) -> dict:
 
 
 def process_lines_data(lines_df: pd.DataFrame):
-    start_year = input("\nEnter start year: ")
-    end_year = input("\nEnter end year: ")
 
-    filter_df, start_year, end_year = filter_seasons(lines_df, start_year, end_year)
-
-    filter_df["underdog"] = find_underdog(filter_df)
+    lines_df["underdog"] = find_underdog(lines_df)
 
     print("\nAnalyzing data...\n")
-    lines = LinesAnalyzer(filter_df)
+    lines = LinesAnalyzer(lines_df)
 
-    return lines, start_year, end_year
+    return lines
 
 
 def get_coverage_report(lines: LinesAnalyzer):
@@ -266,19 +252,12 @@ def get_new_coverage_report(lines, start_year, end_year):
 
 
 def main():
-    again = "Y"
-    source = input("\nLocal file or web? (l/return) ")
+    again = 'y'
 
-    selection_dict = create_selection_dict(LINES_ENDPOINTS.keys())
-    league = selection_dict[input("\nSelect a league to analyze: ")]
+    lines_df = get_lines_raw_data_from_web('NBA')
 
-    if source.upper() == "L":
-        lines_df = get_lines_raw_data_from_local_file()
-    else:
-        lines_df = get_lines_raw_data_from_web(league)
-
-    lines, start_year, end_year = process_lines_data(lines_df)
-    todays_lines = get_lines_raw_data_from_web(league, historical=False)
+    lines = process_lines_data(lines_df)
+    todays_lines = get_lines_raw_data_from_web('NBA', historical=False)
     try:
         todays_lines = todays_lines[TODAYS_LINES["keep_columns"]]
     except KeyError:
@@ -287,12 +266,12 @@ def main():
     while again.upper() == "Y":
         methods = [
             "Get today's lines",
+            "Tell me who to pick",
             "Get Coverage Report",
             "Get favorite splits",
             "Get underdog splits",
             "Get over/under splits",
             "Export all reports",
-            "Tell me who to pick",
             "Export Tables as HTML",
             "Update Lines SQL table",
             "Get new coverage summary",

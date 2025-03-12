@@ -76,7 +76,7 @@ def convert_sql_to_df(
     else:
         return pd.read_sql(sql=query, con=get_connection())
 
-def fetch_aggregate_betting_data(window_ngames: int = 3):
+def fetch_aggregate_betting_data(window_ngames: int = 3, training: bool = True):
     window_ngames = str(window_ngames)
     query = f"""
     --LINES TABLE
