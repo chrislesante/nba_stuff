@@ -195,7 +195,7 @@ def table_header():
     print("\n**********************************************************\n")
 
 
-def choose_picks(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
+def choose_picks(todays_lines: pd.DataFrame):
     table_header()
     print("This option is not yet implemented.")
     table_header()
