@@ -76,6 +76,7 @@ def convert_sql_to_df(
     else:
         return pd.read_sql(sql=query, con=get_connection())
 
+
 def fetch_aggregate_betting_data(window_ngames: int = 3, training: bool = True):
     window_ngames = str(window_ngames)
     query = f"""
@@ -396,4 +397,24 @@ INNER JOIN lines_formatted
 		AND lines_formatted."HOME_TEAM" = logs_agg."HOME_TEAM"
 		AND lines_formatted."AWAY_TEAM" = logs_agg."AWAY_TEAM";
     """
+
     return convert_sql_to_df(query=query)
+
+
+def prepare_staging_tables(window_ngames: int = 3):
+    window_ngames = str(window_ngames)
+    staging_query_pg = f'SELECT * FROM gamelogs.player_gamelogs_v2 ORDER BY "GAME_DATE" DESC LIMIT {window_ngames}'
+    export_df_to_sql(
+        convert_sql_to_df(query=staging_query_pg),
+        table_name='player_gamelogs_staged',
+        schema='staging',
+        behavior='replace'
+	)
+    
+	staging_query_lines = f'SELECT * FROM general.lines ORDER BY "game_date" DESC LIMIT {window_ngames}'
+	export_df_to_sql(
+        convert_sql_to_df(query=staging_query_lines),
+        table_name='lines_staged',
+        schema='staging',
+        behavior='replace'
+	)
