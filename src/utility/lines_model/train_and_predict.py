@@ -88,8 +88,7 @@ def get_todays_lineups():
         "rosterStatus",
     ]
     team_columns = ["teamId", "teamAbbreviation"]
-    df_columns = ["gameId", "gameStatus"]
-    df_columns.extend(player_columns)
+
     lineups = requests.get(
         f"https://stats.nba.com/js/data/leaders/00_daily_lineups_{year}{month}{day}.json"
     )
@@ -115,7 +114,11 @@ def get_todays_lineups():
     home_team_df = explode_players(home_team_df, "homeTeam")
     away_team_df = explode_players(away_team_df, "awayTeam")
 
-    return pd.concat([home_team_df, away_team_df])
+    lineup_df = pd.concat([home_team_df, away_team_df])
+    
+    lineup_df = lineup_df.drop(columns=['lineupStatus', 'position']).drop_duplicates()
+   
+    return lineup_df.loc[lineup_df['rosterStatus'] == "Active"]
 
 
 def cross_ref_injury_report(lineups_df):
@@ -132,6 +135,8 @@ def cross_ref_injury_report(lineups_df):
 def fetch_new_x_data():
     lineups_df = get_todays_lineups()
     active_players = cross_ref_injury_report(lineups_df)
+
+    active_player_agg_data = sql.agg_active_player_new_x_data(active_players)
 
 def get_ou_predictions(training_data, new_x):
     reg_out_linear_ou = train_model(training_data, "ou")
