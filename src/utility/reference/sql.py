@@ -403,37 +403,41 @@ INNER JOIN lines_formatted
 def agg_active_player_new_x_data(active_lineup, window_ngames: int = 3):
     id_list = active_lineup['personId'].to_list()
     query = f"""
-	SELECT
-			ROUND(AVG(pg."PTS") OVER (
-				PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
-				ORDER BY pg."GAME_DATE"
-				ROWS BETWEEN {str(window_ngames - 1)} PRECEDING AND CURRENT ROW
-			), 4) AS "LAST_3_PPG",
-			ROUND(STDDEV(pg."PTS") OVER (
-				PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
-				ORDER BY pg."GAME_DATE"
-				ROWS BETWEEN {str(window_ngames -1)} PRECEDING AND CURRENT ROW
-			), 4) AS "LAST_3_PPG_STDDEV",
-			ROUND(AVG(pg."PTS") OVER (
-				PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
-				ORDER BY pg."GAME_DATE"
-				ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-			), 4) AS "SEASON_PPG",
-			ROUND(STDDEV(pg."PTS") OVER (
-				PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
-				ORDER BY pg."GAME_DATE"
-				ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-			), 4) AS "SEASON_PPG_STDDEV",
-			height."HEIGHT_INCHES"
-	FROM gamelogs.player_gamelogs_v2 as pg
-	LEFT JOIN 
-		(SELECT 
-			"PERSON_ID",
-			((STRING_TO_ARRAY("HEIGHT", '-'))[1]::numeric * 12) 
-				+ ((STRING_TO_ARRAY("HEIGHT", '-'))[2]::numeric) AS "HEIGHT_INCHES"
-			FROM general.all_historical_players) as height
-			ON height."PERSON_ID" = pg."Player_ID"
-	WHERE pg."Player_ID" IN ({", ".join(id_list)})
-	ORDER BY "GAME_DATE" DESC LIMIT {len(id_list)};
+	WITH active_players AS (
+    SELECT
+        pg."Player_ID",
+        pg."player_name",
+        pg."GAME_DATE",
+        pg."PTS",
+        RIGHT(pg."SEASON_ID", 4)::numeric AS "SEASON_YEAR",
+        ROUND(AVG(pg."PTS") OVER (
+            PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
+            ORDER BY pg."GAME_DATE"
+            ROWS BETWEEN {str(window_ngames - 1)} PRECEDING AND CURRENT ROW
+        ), 4) AS "LAST_3_PPG",
+        ROUND(STDDEV(pg."PTS") OVER (
+            PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
+            ORDER BY pg."GAME_DATE"
+            ROWS BETWEEN {str(window_ngames - 1)} PRECEDING AND CURRENT ROW
+        ), 4) AS "LAST_3_PPG_STDDEV",
+        ROUND(AVG(pg."PTS") OVER (
+            PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
+            ORDER BY pg."GAME_DATE"
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ), 4) AS "SEASON_PPG",
+        ROUND(STDDEV(pg."PTS") OVER (
+            PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
+            ORDER BY pg."GAME_DATE"
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ), 4) AS "SEASON_PPG_STDDEV",
+        ((STRING_TO_ARRAY(height."HEIGHT", '-'))[1]::numeric * 12) + ((STRING_TO_ARRAY(height."HEIGHT", '-'))[2]::numeric) AS "HEIGHT_INCHES",
+        ROW_NUMBER() OVER (PARTITION BY pg."Player_ID" ORDER BY pg."GAME_DATE" DESC) AS "rn"
+    FROM gamelogs.player_gamelogs_v2 AS pg
+    LEFT JOIN general.all_historical_players AS height ON height."PERSON_ID" = pg."Player_ID"
+    WHERE pg."Player_ID" IN ({", ".join(id_list)})
+	SELECT *
+	FROM active_players
+	WHERE rn = 1
+	ORDER BY "Player_ID", "player_name" DESC LIMIT {len(id_list)};
 	"""
     return convert_sql_to_df(query=query)
