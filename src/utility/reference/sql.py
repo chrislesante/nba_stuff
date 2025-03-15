@@ -7,12 +7,11 @@ import os
 
 load_dotenv()
 
-FLATFILE_PATH = f"{os.environ['HOME']}/Desktop/nba_flatfiles/"
 USER = os.environ["sql_username"]
-PASSWORD = getpass.getpass("\nEnter SQL password: ")
+PASSWORD = os.environ['aws_rds_pass']
 HOST = os.environ["sql_host"]
 PORT = os.environ["sql_port"]
-DATABASE = "NBA"
+DATABASE = os.environ['database']
 
 
 def get_connection():
@@ -95,7 +94,7 @@ def fetch_aggregate_betting_data(window_ngames: int = 3, training: bool = True):
 			"game_over_under" AS "OVER_UNDER",
 			"home_team_score" AS "HOME_SCORE",
 			"visit_team_score" AS "AWAY_SCORE"
-		FROM general.lines
+		FROM nba_general.lines
 		        )
 --TOP LEVEL
 SELECT 
@@ -353,7 +352,7 @@ FROM
 				                CASE WHEN pg."WL" = 'L' THEN 1 ELSE 0 END AS "L",
 				                CASE WHEN pg."HOME/AWAY" = 'HOME' THEN "TEAM" ELSE "OPPONENT" END AS "HOME_TEAM",
 				                CASE WHEN pg."HOME/AWAY" = 'AWAY' THEN "TEAM" ELSE "OPPONENT" END AS "AWAY_TEAM"
-				            FROM gamelogs.player_gamelogs_v2 as pg
+				            FROM nba_gamelogs.player_gamelogs as pg
 							LEFT JOIN 
 							(SELECT 
 								"PERSON_ID",
@@ -432,7 +431,7 @@ def agg_active_player_new_x_data(active_lineup, window_ngames: int = 3):
         ), 4) AS "SEASON_PPG_STDDEV",
         ((STRING_TO_ARRAY(height."HEIGHT", '-'))[1]::numeric * 12) + ((STRING_TO_ARRAY(height."HEIGHT", '-'))[2]::numeric) AS "HEIGHT_INCHES",
         ROW_NUMBER() OVER (PARTITION BY pg."Player_ID" ORDER BY pg."GAME_DATE" DESC) AS "rn"
-    FROM gamelogs.player_gamelogs_v2 AS pg
+    FROM nba_gamelogs.player_gamelogs AS pg
     LEFT JOIN general.all_historical_players AS height ON height."PERSON_ID" = pg."Player_ID"
     WHERE pg."Player_ID" IN ({", ".join(id_list)})
 	SELECT *

@@ -299,7 +299,7 @@ def main():
         elif selection_dict[choice] == "Export all reports":
             export_data(lines, todays_lines)
         elif selection_dict[choice] == "Tell me who to pick":
-            picks = choose_picks(lines, todays_lines)
+            picks = choose_picks(todays_lines)
             print(picks)
         elif selection_dict[choice] == "Export Tables as HTML":
             export_html(lines, todays_lines)
