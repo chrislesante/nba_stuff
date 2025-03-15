@@ -413,12 +413,12 @@ def agg_active_player_new_x_data(active_lineup, window_ngames: int = 3):
             PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
             ORDER BY pg."GAME_DATE"
             ROWS BETWEEN {str(window_ngames - 1)} PRECEDING AND CURRENT ROW
-        ), 4) AS "LAST_3_PPG",
+        ), 4) AS "LAST_{str(window_ngames)}_PPG",
         ROUND(STDDEV(pg."PTS") OVER (
             PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
             ORDER BY pg."GAME_DATE"
             ROWS BETWEEN {str(window_ngames - 1)} PRECEDING AND CURRENT ROW
-        ), 4) AS "LAST_3_PPG_STDDEV",
+        ), 4) AS "LAST_{str(window_ngames)}_PPG_STDDEV",
         ROUND(AVG(pg."PTS") OVER (
             PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
             ORDER BY pg."GAME_DATE"

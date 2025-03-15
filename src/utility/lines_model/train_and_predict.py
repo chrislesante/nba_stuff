@@ -5,7 +5,6 @@ import requests
 from datetime import datetime as dt
 from utility.reference import sql, injury_scraper as inj
 from sklearn.linear_model import LogisticRegression, LinearRegression
-from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from xgboost import XGBRegressor
 from skopt import BayesSearchCV
@@ -13,12 +12,6 @@ from skopt.space import Real, Categorical, Integer
 from sklearn import tree
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.model_selection import (
-    train_test_split,
-    cross_val_score,
-    KFold,
-    GridSearchCV,
-)
 
 
 def get_x_y(training_data: pd.DataFrame, model, window_ngames: int = 3):
@@ -132,11 +125,36 @@ def cross_ref_injury_report(lineups_df):
         )
     ]
 
-def fetch_new_x_data():
+def get_active_player_data():
     lineups_df = get_todays_lineups()
     active_players = cross_ref_injury_report(lineups_df)
 
-    active_player_agg_data = sql.agg_active_player_new_x_data(active_players)
+    return sql.agg_active_player_new_x_data(active_players)
+
+def fetch_new_x_data():
+    active_player_agg_data = get_active_player_data()
+
+     # missing data:
+	# ("HOME_SCORE" - "AWAY_SCORE") AS "DIFF",
+	# "GAME_TOTAL_PTS",
+	# "HOME_TEAM_OPP_PPG",
+	# "HOME_TEAM_OPP_LAST_{window_ngames}_PPG",
+	# "AWAY_TEAM_OPP_PPG",
+	# "AWAY_TEAM_OPP_LAST_{window_ngames}_PPG",
+	# "HOME_TEAM_PPG_AT_HOME",
+	# "AWAY_TEAM_PPG_AWAY",
+	# "HOME_TEAM_LAST_{window_ngames}_PPG_AT_HOME",
+	# "AWAY_TEAM_LAST_{window_ngames}_PPG_AWAY",
+	# "HOME_TEAM_2ND_OF_B2B",
+	# "AWAY_TEAM_2ND_OF_B2B",
+	# "HOME_AVG_HEIGHT_INCHES",
+	# "HOME_STDDEV_HEIGHT_INCHES",
+	# "AWAY_AVG_HEIGHT_INCHES",
+	# "AWAY_STDDEV_HEIGHT_INCHES",
+	# "HOME_TEAM_GAMES_PLAYED",
+	# "HOME_TEAM_WIN_PCT",
+	# "AWAY_TEAM_GAMES_PLAYED",
+	# "AWAY_TEAM_WIN_PCT"
 
 def get_ou_predictions(training_data, new_x):
     reg_out_linear_ou = train_model(training_data, "ou")
