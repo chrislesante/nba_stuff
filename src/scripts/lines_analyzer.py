@@ -240,8 +240,7 @@ def export_html(lines: LinesAnalyzer, todays_lines: pd.DataFrame):
 
 
 def update_sql_table(lines: LinesAnalyzer):
-    sql.export_df_to_sql(lines.raw)
-
+    sql.export_df_to_sql(lines.raw, table_name='lines', schema='nba_general')
 
 def get_new_coverage_report(lines, start_year, end_year):
     coverage_summary = LinesAnalyzer.get_new_coverage_summary(
