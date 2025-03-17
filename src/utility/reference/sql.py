@@ -440,3 +440,35 @@ def agg_active_player_new_x_data(active_lineup, window_ngames: int = 3):
 	ORDER BY "Player_ID", "player_name" DESC LIMIT {len(id_list)};
 	"""
     return convert_sql_to_df(query=query)
+
+def agg_team_new_x_data(window_ngames: int = 3):
+    query = """
+	WITH team_metrics as (
+	SELECT 
+	"TEAM",
+	ROUND(AVG("PTS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM"
+		ORDER BY "GAME_DATE" ROWS BETWEEN
+		UNBOUNDED PRECEDING AND CURRENT ROW)::numeric, 4) AS "SEASON_PPG",
+	ROUND(AVG("PTS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM"
+		ORDER BY "GAME_DATE" ROWS BETWEEN
+		2 PRECEDING AND CURRENT ROW)::numeric, 4) AS "LAST_3_PPG",
+	ROUND(AVG("PTS"::numeric - "PLUS_MINUS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM"
+		ORDER BY "GAME_DATE" ROWS BETWEEN
+		UNBOUNDED PRECEDING AND CURRENT ROW)::numeric, 4) AS "SEASON_OPP_PPG",
+	ROUND(AVG("PTS"::numeric - "PLUS_MINUS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM"
+		ORDER BY "GAME_DATE" ROWS BETWEEN
+		2 PRECEDING AND CURRENT ROW)::numeric, 4) AS "LAST_3_OPP_PPG",
+		ROW_NUMBER() OVER (PARTITION BY "TEAM_ID" ORDER BY "GAME_DATE" DESC) AS "rn"
+	FROM 
+		nba_gamelogs.team_gamelogs
+	ORDER BY "GAME_DATE" DESC)
+	SELECT 
+		"TEAM",
+		"SEASON_PPG",
+		"LAST_3_PPG",
+		"SEASON_OPP_PPG",
+		"LAST_3_OPP_PPG"
+	FROM team_metrics
+	WHERE rn = 1
+	LIMIT 30;
+"""

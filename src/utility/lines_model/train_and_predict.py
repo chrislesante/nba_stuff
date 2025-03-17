@@ -133,14 +133,9 @@ def get_active_player_data():
 
 def fetch_new_x_data():
     active_player_agg_data = get_active_player_data()
+    team_agg_data = sql.agg_team_new_x_data()
 
      # missing data:
-	# ("HOME_SCORE" - "AWAY_SCORE") AS "DIFF",
-	# "GAME_TOTAL_PTS",
-	# "HOME_TEAM_OPP_PPG",
-	# "HOME_TEAM_OPP_LAST_{window_ngames}_PPG",
-	# "AWAY_TEAM_OPP_PPG",
-	# "AWAY_TEAM_OPP_LAST_{window_ngames}_PPG",
 	# "HOME_TEAM_PPG_AT_HOME",
 	# "AWAY_TEAM_PPG_AWAY",
 	# "HOME_TEAM_LAST_{window_ngames}_PPG_AT_HOME",
