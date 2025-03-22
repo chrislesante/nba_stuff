@@ -8,10 +8,10 @@ import os
 load_dotenv()
 
 USER = os.environ["sql_username"]
-PASSWORD = os.environ['aws_rds_pass']
+PASSWORD = os.environ["aws_rds_pass"]
 HOST = os.environ["sql_host"]
 PORT = os.environ["sql_port"]
-DATABASE = os.environ['database']
+DATABASE = os.environ["database"]
 
 
 def get_connection():
@@ -358,7 +358,7 @@ FROM
 								"PERSON_ID",
 								((STRING_TO_ARRAY("HEIGHT", '-'))[1]::numeric * 12) 
 									+ ((STRING_TO_ARRAY("HEIGHT", '-'))[2]::numeric) AS "HEIGHT_INCHES"
-								FROM general.all_historical_players) as height
+								FROM nba_general.players) as height
 								ON height."PERSON_ID" = pg."Player_ID"
 				        ) AS gamelogs_formatted
 						
@@ -399,15 +399,16 @@ INNER JOIN lines_formatted
 
     return convert_sql_to_df(query=query)
 
+
 def agg_active_player_new_x_data(active_lineup, window_ngames: int = 3):
-    id_list = active_lineup['personId'].to_list()
+    id_list = active_lineup["personId"].astype(str).to_list()
     query = f"""
 	WITH active_players AS (
     SELECT
         pg."Player_ID",
         pg."player_name",
         pg."GAME_DATE",
-        pg."PTS",
+        height."TEAM_ID",
         RIGHT(pg."SEASON_ID", 4)::numeric AS "SEASON_YEAR",
         ROUND(AVG(pg."PTS") OVER (
             PARTITION BY RIGHT(pg."SEASON_ID", 4)::numeric, pg."player_name", pg."Player_ID"
@@ -432,8 +433,8 @@ def agg_active_player_new_x_data(active_lineup, window_ngames: int = 3):
         ((STRING_TO_ARRAY(height."HEIGHT", '-'))[1]::numeric * 12) + ((STRING_TO_ARRAY(height."HEIGHT", '-'))[2]::numeric) AS "HEIGHT_INCHES",
         ROW_NUMBER() OVER (PARTITION BY pg."Player_ID" ORDER BY pg."GAME_DATE" DESC) AS "rn"
     FROM nba_gamelogs.player_gamelogs AS pg
-    LEFT JOIN general.all_historical_players AS height ON height."PERSON_ID" = pg."Player_ID"
-    WHERE pg."Player_ID" IN ({", ".join(id_list)})
+    LEFT JOIN nba_general.players AS height ON height."PERSON_ID" = pg."Player_ID"
+    WHERE pg."Player_ID" IN ({", ".join(id_list)}))
 	SELECT *
 	FROM active_players
 	WHERE rn = 1
@@ -441,34 +442,64 @@ def agg_active_player_new_x_data(active_lineup, window_ngames: int = 3):
 	"""
     return convert_sql_to_df(query=query)
 
+
 def agg_team_new_x_data(window_ngames: int = 3):
-    query = """
-	WITH team_metrics as (
-	SELECT 
-	"TEAM",
-	ROUND(AVG("PTS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM"
-		ORDER BY "GAME_DATE" ROWS BETWEEN
-		UNBOUNDED PRECEDING AND CURRENT ROW)::numeric, 4) AS "SEASON_PPG",
-	ROUND(AVG("PTS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM"
-		ORDER BY "GAME_DATE" ROWS BETWEEN
-		2 PRECEDING AND CURRENT ROW)::numeric, 4) AS "LAST_3_PPG",
-	ROUND(AVG("PTS"::numeric - "PLUS_MINUS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM"
-		ORDER BY "GAME_DATE" ROWS BETWEEN
-		UNBOUNDED PRECEDING AND CURRENT ROW)::numeric, 4) AS "SEASON_OPP_PPG",
-	ROUND(AVG("PTS"::numeric - "PLUS_MINUS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM"
-		ORDER BY "GAME_DATE" ROWS BETWEEN
-		2 PRECEDING AND CURRENT ROW)::numeric, 4) AS "LAST_3_OPP_PPG",
-		ROW_NUMBER() OVER (PARTITION BY "TEAM_ID" ORDER BY "GAME_DATE" DESC) AS "rn"
-	FROM 
-		nba_gamelogs.team_gamelogs
-	ORDER BY "GAME_DATE" DESC)
-	SELECT 
-		"TEAM",
-		"SEASON_PPG",
-		"LAST_3_PPG",
-		"SEASON_OPP_PPG",
-		"LAST_3_OPP_PPG"
-	FROM team_metrics
-	WHERE rn = 1
-	LIMIT 30;
-"""
+    for n in ["HOME", "AWAY", "TOTAL"]:
+
+        query = f"""
+		WITH team_metrics as ( 
+		SELECT 
+        "GAME_DATE",
+        "TEAM_ID",
+		"TEAM", 
+		ROUND(AVG("PTS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM" 
+			ORDER BY "GAME_DATE" ROWS BETWEEN 
+			UNBOUNDED PRECEDING AND CURRENT ROW)::numeric, 4) AS "SEASON_PPG", 
+		ROUND(AVG("PTS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM" 
+			ORDER BY "GAME_DATE" ROWS BETWEEN 
+			{window_ngames - 1} PRECEDING AND CURRENT ROW)::numeric, 4) AS "LAST_{str(window_ngames)}_PPG",
+        ROUND(AVG("PTS"::numeric - "PLUS_MINUS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM"
+			ORDER BY "GAME_DATE" ROWS BETWEEN
+			UNBOUNDED PRECEDING AND CURRENT ROW)::numeric, 4) AS "SEASON_OPP_PPG",
+		ROUND(AVG("PTS"::numeric - "PLUS_MINUS"::numeric) OVER (PARTITION BY "SEASON_YEAR", "TEAM"
+			ORDER BY "GAME_DATE" ROWS BETWEEN
+			{window_ngames - 1} PRECEDING AND CURRENT ROW)::numeric, 4) AS "LAST_{window_ngames}_OPP_PPG", 
+        ROW_NUMBER() OVER (PARTITION BY "TEAM_ID" ORDER BY "GAME_DATE" DESC) AS "rn"
+		FROM  
+			nba_gamelogs.team_gamelogs 
+        WHERE "HOME/AWAY" = '{n}'
+		ORDER BY "GAME_DATE" DESC) 
+		SELECT  
+			MAX("GAME_DATE") AS "LAST_GAME_DATE",
+            "TEAM_ID",
+			"TEAM", 
+			"SEASON_PPG", 
+			"LAST_{window_ngames}_PPG", 
+			"SEASON_OPP_PPG", 
+			"LAST_{window_ngames}_OPP_PPG" 
+		FROM team_metrics 
+		WHERE rn = 1 
+        GROUP BY 
+        	"TEAM_ID", 
+        	"TEAM", 
+            "SEASON_PPG",
+            "LAST_{window_ngames}_PPG", 
+			"SEASON_OPP_PPG", 
+			"LAST_{window_ngames}_OPP_PPG" 
+		LIMIT 30; 
+	"""
+        if n == "HOME":
+            home_df = convert_sql_to_df(query=query)
+        elif n == "AWAY":
+            away_df = convert_sql_to_df(query=query)
+        else:
+            query = query.replace(f"WHERE \"HOME/AWAY\" = '{n}'", "")
+            total_df = convert_sql_to_df(query=query)
+            total_df = total_df[["TEAM_ID", "SEASON_OPP_PPG", f"LAST_{window_ngames}_OPP_PPG"]]
+
+    merged = (
+        home_df.merge(away_df, on="TEAM", suffixes=("_HOME", "_AWAY"))
+        .rename({"TEAM_ID_HOME": "TEAM_ID"}, axis=1)
+        .drop("TEAM_ID_AWAY", axis=1)
+    )
+    return merged.merge(total_df, on="TEAM_ID")

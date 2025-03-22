@@ -1,5 +1,6 @@
 from utility.lines_model.datamodel import LinesAnalyzer
 from utility.reference import sql
+from utility.lines_model.train_and_predict import fetch_predictions
 import pandas as pd
 import json
 import requests
@@ -197,7 +198,7 @@ def table_header():
 
 def choose_picks(todays_lines: pd.DataFrame):
     table_header()
-    print("This option is not yet implemented.")
+    fetch_predictions()
     table_header()
 
 
