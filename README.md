@@ -64,4 +64,4 @@ The `utility/reference/sql.py` script is there to make interacting with the post
 
 [League Avg 3PA vs. Champ Avg 3PA](https://datawrapper.dwcdn.net/LMIbM/2/)
 
-[Bam Adebayo Shot Diet Evolution](https://datawrapper.dwcdn.net/VPKe1/1/)
+[Bam Adebayo Shot Diet Evolution](https://www.datawrapper.de/_/VPKe1/)
