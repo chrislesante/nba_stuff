@@ -63,3 +63,5 @@ The `utility/reference/sql.py` script is there to make interacting with the post
 [3 Pointers in the 3 Point Era](https://datawrapper.dwcdn.net/k4ecb/2/)
 
 [League Avg 3PA vs. Champ Avg 3PA](https://datawrapper.dwcdn.net/LMIbM/2/)
+
+[Bam Adebayo Shot Diet Evolution](https://datawrapper.dwcdn.net/VPKe1/1/)
