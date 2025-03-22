@@ -303,7 +303,6 @@ class LinesAnalyzer:
             ou_df_merged["ppg_away"] + ou_df_merged["opp_ppg_away"]
         )
 
-        ou_df_merged.to_csv("ou_df_merged")
         ou_df_merged = ou_df_merged[TABLES["over_under_splits"]]
 
         return ou_df_merged

@@ -10,7 +10,7 @@ import requests
 pd.options.mode.chained_assignment = None
 
 START_SEASON = 1979 # The 3pt line was introduced into the NBA in the 1979 season
-PLAYER_DF = sql.convert_sql_to_df("all_historical_players", "general")
+PLAYER_DF = sql.convert_sql_to_df("players", "nba_general")
 HEADERS = playergamelog.PlayerGameLog(
     player_id=PLAYER_DF.loc[0, "PERSON_ID"]
 ).get_dict()["resultSets"][0]["headers"]
@@ -81,8 +81,8 @@ def main():
         gamelog_df = scrape_game_logs(PLAYER_DF, season_batch)
         sql.export_df_to_sql(
             gamelog_df,
-            table_name="player_gamelogs_v2",
-            schema="gamelogs",
+            table_name="player_gamelogs",
+            schema="nba_gamelogs",
             behavior="append",
         )
 

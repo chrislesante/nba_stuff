@@ -25,7 +25,7 @@ def main():
             continue
         time.sleep(0.6)
     
-    sql.export_df_to_sql(df=champ_df, table_name='champions', schema='general', behavior='replace')
+    sql.export_df_to_sql(df=champ_df, table_name='champions', schema='nba_general', behavior='replace')
 
 if __name__ == '__main__':
     main()

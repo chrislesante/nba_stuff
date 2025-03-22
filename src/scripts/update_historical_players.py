@@ -70,14 +70,11 @@ def fix_dtypes(new_df):
 
 
 def main():
-    old_df = get_current_data()
     new_df = fetch_latest_data()
-    # new_df = fix_dtypes(new_df)
-    export_flatfiles(old_df, new_df)
     sql.export_df_to_sql(
         df=new_df,
-        table_name="all_historical_players",
-        schema="general",
+        table_name="players",
+        schema="nba_general",
         behavior="replace",
     )
 

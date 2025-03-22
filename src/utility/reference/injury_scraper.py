@@ -10,7 +10,6 @@ import requests
 import pandas as pd
 from datetime import date
 
-DOWNLOAD_LOC = os.path.join(os.environ.get("HOME"), "Desktop")
 INJURY_REPORT_URL = "https://www.basketball-reference.com/friv/injuries.fcgi"
 
 
@@ -28,7 +27,7 @@ def grab_injury_report():
     stat_headers = columns[:4]
     stat_headers.insert(3, "Status")
 
-    nbaInjuryReportDF = pd.DataFrame(columns=stat_headers)
+    injury_df = pd.DataFrame(columns=stat_headers)
 
     injury_data = injury_report_html.find_all("tr")
 
@@ -41,22 +40,10 @@ def grab_injury_report():
         status_des = individual_row_data[3].split(" - ")
         individual_row_data.insert(3, status_des[0])
         individual_row_data[4] = status_des[1]
-        nbaInjuryReportDF.loc[len(nbaInjuryReportDF)] = individual_row_data
+        injury_df.loc[len(injury_df)] = individual_row_data
 
-    return nbaInjuryReportDF
+    return injury_df
 
-
-def export_report(injuryDF):
-    today = date.today()
-    injuryDF.to_csv(
-        os.path.join(DOWNLOAD_LOC, f"nbaInjuryReport{today}.csv"), index=False
-    )
+    
 
 
-def main():
-    injuryDF = grab_injury_report()
-    export_report(injuryDF)
-
-
-if __name__ == "__main__":
-    main()

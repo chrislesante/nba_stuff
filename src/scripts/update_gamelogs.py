@@ -16,7 +16,7 @@ log = get_struct_logger()
 HEADERS = sql.convert_sql_to_df(
     query="SELECT column_name \
                                 FROM information_schema.columns \
-                                WHERE table_name = 'player_gamelogs_v2';"
+                                WHERE table_name = 'player_gamelogs';"
 )["column_name"].to_list()
 TODAY = date.today()
 ACTIVE_PLAYERS_DF = pd.DataFrame.from_records(players.get_active_players())
@@ -38,7 +38,7 @@ MONTHS = {
 
 def get_current_gamelogs():
     log.info("Grabbing current gamelogs...")
-    return sql.convert_sql_to_df(table_name="player_gamelogs_v2", schema="gamelogs")
+    return sql.convert_sql_to_df(table_name="player_gamelogs", schema="nba_gamelogs")
 
 
 def find_latest_game_date(current_gamelog_df):
@@ -149,25 +149,6 @@ def get_home_away(matchup):
     team, opponent, home_away = clean_matchup_column(matchup)
     return home_away
 
-
-def export_flatfiles(
-    current_gamelog_df: pd.DataFrame, new_logs_df: pd.DataFrame
-) -> None:
-    download_path = f"{sql.FLATFILE_PATH}previous_version/{TODAY}"
-    if not os.path.exists(download_path):
-        os.makedirs(download_path)
-
-    current_gamelog_df.to_csv(f"{download_path}/old_gamelogs.csv", index=False)
-
-    download_path = f"{sql.FLATFILE_PATH}added_logs/{TODAY}"
-    if not os.path.exists(download_path):
-        os.makedirs(download_path)
-
-    new_logs_df.to_csv(f"{download_path}/new_gamelogs.csv", index=False)
-
-    log.info(f"\nFlatfiles exported to {sql.FLATFILE_PATH}")
-
-
 def main():
     current_gamelog_df = get_current_gamelogs()
     latest_game_date = find_latest_game_date(current_gamelog_df)
@@ -180,15 +161,13 @@ def main():
 
     updated_logs.drop_duplicates(inplace=True)
 
-    export_flatfiles(current_gamelog_df, new_logs_df)
-
     del current_gamelog_df
 
     log.info("Exporting to sql db...")
     sql.export_df_to_sql(
         df=updated_logs,
-        table_name="player_gamelogs_v2",
-        schema="gamelogs",
+        table_name="player_gamelogs",
+        schema="nba_gamelogs",
         behavior="replace",
     )
     log.info("Export successful.")
