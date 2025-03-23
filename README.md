@@ -55,7 +55,7 @@ Here is a description of the make targets:
 
 ## Noteworthy
 
-`utility/lines_model/datamodel.py` was primarily built as an exercise in object-oriented programming. `lines_analyzer.py` can be used to make over/under and spread predictions powered by the Sci-Kit Learn module.
+`utility/lines_model/datamodel.py` was primarily built as an exercise in object-oriented programming and is only useful for high-level analysis. `lines_analyzer.py` can be used to make over/under and spread predictions powered by the Sci-Kit Learn module.
 
 ## sql.py
 
