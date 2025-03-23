@@ -2,18 +2,19 @@
 
 ## Welcome!
 
-My name is Chris and I am a data engineer/analyst. This is my personal repo for the purpose of building and maintaining a local postgres database of NBA data. The majority of data is sourced directly from the NBA's API, with the exception of the injury scraper and lines scraper, which pull from basketball-reference and rotowire respectively. This repo can be used to replicate a similar database on any machine.
+My name is Chris and I am a data engineer/analyst. This is my personal repo for the purpose of building and maintaining a AWS postgres database of NBA data. The majority of data is sourced directly from the NBA's API, with the exception of the injury scraper and lines scraper, which pull from basketball-reference and rotowire respectively. This repo can be used to replicate a similar database on any machine.
 
 ## About my local database
 
-My local database is currently comprised of two schemas: **general** and **gamelogs**.
+My database is currently comprised of two schemas: **nba_general** and **nba_gamelogs**.
 
 `gamelogs`: contains two tables
     * **play_by_play** - contains play by play data going back to 1996 (when the NBA began recording play by play data). The data becomes significantly more robust in the 2013-2014 season, when Second-Spectrum began tracking advanced on court data. (sourced from NBA API)
-    * **player_gamelogs_v2** - this is the second version of the table, as the name implies, and it contains every player's individual gamelog going back to the 1979 season (which is when the 3pt line was introduced to the NBA). If you wanted to extract all gamelogs going back to a different season, you can change the `START_SEASON` global variable in `get_all_gamelogs.py`, to the season of your choice, and run the script. (sourced from NBA API)
+    * **player_gamelogs** - this table contains every player's individual gamelogs going back to the 1979 season (which is when the 3pt line was introduced to the NBA). If you wanted to extract all gamelogs going back to a different season, you can change the `START_SEASON` global variable in `get_all_gamelogs.py`, to the season of your choice, and run the script. (sourced from NBA API)
+    * **team_gamelogs** - this table contains team boxscores going back to the 2013 season. This table is primarily useful for aggregating data in the betting model's prediction pipeline.
 
-`general`: contains two tables
-    * **all_historical_players** - contains bio/career info for all players in NBA history (sourced from NBA API)
+`nba_general`: contains two tables
+    * **players** - contains bio/career info for all players in NBA history (sourced from NBA API)
     * **lines** - contains lines data (spread, over/under, game totals, etc.) going back to the 2017 season (sourced from rotowire).
     * **champions** - contains all historical NBA champions along with the year they were awarded and their opponent.
 
@@ -24,10 +25,12 @@ Set up a _.env_ file at the top level of the repo that contains the following va
 ```
 sql_username=[YOUR POSTGRES SERVER USERNAME]
 sql_port=[THE PORT NUMBER WHERE YOUR POSTGRES SERVER IS CONNECTED]
-sql_host=[YOUR POSTGRES SERVER HOST NAME]
+sql_host=[YOUR POSTGRES SERVER HOST NAME/ENDPOINT]
+database=[YOUR DATABASE NAME]
+aws_rds_pass=[YOUR USERNAMES PASSWORD]
 ```
 
-The variables above do not necessarily contain sensitive information, but I prefer to conceal my personal configurations with environment variables. With updates to the repo that require the use of arguments containing sensitive information, it is best to store them in this _.env_ file and invoke them using `os.environ[VARIABLE]`. The _.env_ file is included in the _.gitignore_ file to ensure sensitive data is not pushed to github.
+Some of the variables above do not necessarily contain sensitive information, but I prefer to conceal my personal configurations with environment variables. With updates to the repo that require the use of arguments containing sensitive information, it is best to store them in this _.env_ file and invoke them using `os.environ[VARIABLE]`. The _.env_ file is included in the _.gitignore_ file to ensure sensitive data is not pushed to github.
 
 ## Makefile
 
@@ -52,11 +55,11 @@ Here is a description of the make targets:
 
 ## Noteworthy
 
-The **lines_analyzer.py** script is only meant for high-level analysis and should not be relied upon for any significant betting insight. It was primarily built as an exercise in object-oriented programming (see `utility/lines_model/datamodel.py`). I have included a notebook in this repo which builds a machine learning model to predict over/under outcomes.
+`utility/lines_model/datamodel.py` was primarily built as an exercise in object-oriented programming. `lines_analyzer.py` can be used to make over/under and spread predictions powered by the Sci-Kit Learn module.
 
 ## sql.py
 
-The `utility/reference/sql.py` script is there to make interacting with the postgres database within python scripts much simpler as well as preprocessing for machine learning models much less arduous. The **convert_sql_to_df** function pulls data from the database into a pandas dataframe while the **export_df_to_sql** function pushes data from a pandas dataframe to the database. The **fetch_aggregate_betting_data** joins and aggregates data from the _lines_, _player_gamelogs_v2_, and _all_historical_players_ tables to provide interesting test metrics and helpful evaluation fields for machine learning models.
+The `utility/reference/sql.py` script is there to make interacting with the postgres database within python scripts much simpler as well as preprocessing for machine learning models much less arduous. The **convert_sql_to_df** function pulls data from the database into a pandas dataframe while the **export_df_to_sql** function pushes data from a pandas dataframe to the database. The **fetch_aggregate_betting_data** joins and aggregates data from the _lines_, _player_gamelogs_, and _players_ tables to provide interesting test metrics and helpful evaluation fields for machine learning models.
 
 ## Visuals
 
