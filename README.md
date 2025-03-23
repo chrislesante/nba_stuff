@@ -4,16 +4,16 @@
 
 My name is Chris and I am a data engineer/analyst. This is my personal repo for the purpose of building and maintaining a AWS postgres database of NBA data. The majority of data is sourced directly from the NBA's API, with the exception of the injury scraper and lines scraper, which pull from basketball-reference and rotowire respectively. This repo can be used to replicate a similar database on any machine.
 
-## About my local database
+## About my database
 
 My database is currently comprised of two schemas: **nba_general** and **nba_gamelogs**.
 
-`gamelogs`: contains two tables
+`gamelogs`: contains three tables
     * **play_by_play** - contains play by play data going back to 1996 (when the NBA began recording play by play data). The data becomes significantly more robust in the 2013-2014 season, when Second-Spectrum began tracking advanced on court data. (sourced from NBA API)
     * **player_gamelogs** - this table contains every player's individual gamelogs going back to the 1979 season (which is when the 3pt line was introduced to the NBA). If you wanted to extract all gamelogs going back to a different season, you can change the `START_SEASON` global variable in `get_all_gamelogs.py`, to the season of your choice, and run the script. (sourced from NBA API)
     * **team_gamelogs** - this table contains team boxscores going back to the 2013 season. This table is primarily useful for aggregating data in the betting model's prediction pipeline.
 
-`nba_general`: contains two tables
+`nba_general`: contains three tables
     * **players** - contains bio/career info for all players in NBA history (sourced from NBA API)
     * **lines** - contains lines data (spread, over/under, game totals, etc.) going back to the 2017 season (sourced from rotowire).
     * **champions** - contains all historical NBA champions along with the year they were awarded and their opponent.
@@ -55,7 +55,11 @@ Here is a description of the make targets:
 
 ## Noteworthy
 
-`utility/lines_model/datamodel.py` was primarily built as an exercise in object-oriented programming and is only useful for high-level analysis. `lines_analyzer.py` can be used to make over/under and spread predictions powered by the Sci-Kit Learn module.
+`utility/lines_model/datamodel.py` was primarily built as an exercise in object-oriented programming and is only useful for high-level analysis. `lines_analyzer.py` can be used to make over/under and spread predictions powered by the Sci-Kit Learn module. The `fetch_predictions` function can be found in `utility/lines_model/train_and_predict.py`
+
+## train_and_predict.py
+
+This script aggregates data by joining the **player_gamelogs**, **lines**, and **players** tables to train a Linear regression model to predict game point totals and point differentials for the purpose of making Over/Under and spread bets. It gathers prediction data by making an api call to find the current day's active players, cross-referencing that return with the injury report found on basketball-reference, and aggregating data using both the database and additional requests to the API.
 
 ## sql.py
 
