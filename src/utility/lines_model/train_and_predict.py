@@ -5,13 +5,13 @@ import requests
 import datetime as dt
 from nba_api.stats.endpoints.leaguestandings import LeagueStandings as ls
 from utility.reference import sql, injury_scraper as inj
-from sklearn.linear_model import LogisticRegression, LinearRegression
-from sklearn.pipeline import Pipeline
-from skopt import BayesSearchCV
-from skopt.space import Real, Categorical, Integer
-from sklearn import tree
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.linear_model import LinearRegression
+
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
+    'Content-Type': 'application/json',
+    'Referer': 'google.com'
+}
 
 
 def get_x_y(training_data: pd.DataFrame, model, window_ngames: int = 3):
@@ -73,7 +73,7 @@ def get_todays_lineups():
     if month < 10:
         month = "0" + str(month)
     if day < 10:
-        month = "0" + str(day)
+        day = "0" + str(day)
 
     player_columns = [
         "personId",
@@ -87,8 +87,10 @@ def get_todays_lineups():
     team_columns = ["teamId", "teamAbbreviation"]
 
     lineups = requests.get(
-        f"https://stats.nba.com/js/data/leaders/00_daily_lineups_{year}{month}{day}.json"
+        f"https://stats.nba.com/js/data/leaders/00_daily_lineups_{year}{month}{day}.json", headers=HEADERS
     )
+
+    print(lineups.content)
     staging_df = pd.DataFrame.from_records(json.loads(lineups.content)["games"])
 
     home_team_df = staging_df.drop("awayTeam", axis=1)
