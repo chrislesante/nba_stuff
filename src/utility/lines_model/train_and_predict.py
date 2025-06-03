@@ -16,7 +16,6 @@ HEADERS = {
 
 def get_x_y(training_data: pd.DataFrame, model, window_ngames: int = 3):
     training_data.replace(r"^\s*$", np.nan, regex=True, inplace=True)
-    training_data["OVER_UNDER"] = training_data["OVER_UNDER"].astype(float)
     training_data.dropna(inplace=True)
 
     predictors = [
@@ -50,10 +49,8 @@ def get_x_y(training_data: pd.DataFrame, model, window_ngames: int = 3):
 
     if model == "ou":
         y = "GAME_TOTAL_PTS"
-        predictors.append("OVER_UNDER")
     elif model == "lines":
         y = "DIFF"
-        predictors.append("LINE")
 
     return training_data[predictors], training_data[y]
 
@@ -90,7 +87,6 @@ def get_todays_lineups():
         f"https://stats.nba.com/js/data/leaders/00_daily_lineups_{year}{month}{day}.json", headers=HEADERS
     )
 
-    print(lineups.content)
     staging_df = pd.DataFrame.from_records(json.loads(lineups.content)["games"])
 
     home_team_df = staging_df.drop("awayTeam", axis=1)
