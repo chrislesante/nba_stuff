@@ -34,20 +34,22 @@ def get_advanced_metrics(game_metadata):
 
                 enum = {"home": "homeTeam", "away": "awayTeam"}
 
-                record = {
-                    "game_id": response["gameId"],
-                    "away_team_id": response["awayTeamId"],
-                    "home_team_id": response["homeTeamId"],
-                    "date": row["date"],
-                    "season": int(row["season"]),
-                    # "period": period
-                }
                 for team in enum:
-                    stats = response[enum[team]]["statistics"]
-                    for key in stats:
-                        record[f"{team}_{key}"] = stats[key]
-
-                records.append(record)
+                    players = response[enum[team]]['players']
+                    for player in players:
+                        record = {
+                        "game_id": response["gameId"], 
+                            "date": row["date"],
+                            "season": int(row["season"]),
+                            # "period": period
+                        }
+                        record['home_away'] = team
+                        record['player_id'] = player['personId']
+                        record['player_slug'] = player['playerSlug']
+                        record.update(player['statistics'])
+                        
+                        records.append(record)
+                        
                 time.sleep(0.6)
                 break
             except json.decoder.JSONDecodeError:
@@ -86,7 +88,7 @@ def get_game_metadata_from_player_gamelogs_traditional():
 def get_current_game_ids():
     query = """
     SELECT DISTINCT("game_id")
-    FROM nba_gamelogs.team_advanced_metrics;
+    FROM nba_gamelogs.player_advanced_metrics;
     """
     return sql.convert_sql_to_df(query=query)
 
@@ -121,7 +123,7 @@ def main():
 
         sql.export_df_to_sql(
             df=export,
-            table_name="team_advanced_metrics",
+            table_name="player_advanced_metrics",
             schema="nba_gamelogs",
             behavior="append",
         )
