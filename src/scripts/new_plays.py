@@ -67,14 +67,14 @@ def get_play_by_play_data(game_batch, columns):
                 )
                 time.sleep(0.6)
                 break
-            except json.decoder.JSONDecodeError:
-                print("\n\t\tError, trying again...")
+            except json.decoder.JSONDecodeError as e:
+                print(f"\n\t\tError: {e}, trying again...")
                 time.sleep(1)
-            except requests.exceptions.ReadTimeout:
-                print("\n\t\tError, trying again...")
+            except requests.exceptions.ReadTimeout as e:
+                print(f"\n\t\tError: {e}, trying again...")
                 time.sleep(3)
-            except IndexError:
-                print("\n\t\tError, trying again...")
+            except IndexError as e:
+                print(f"\n\t\tError: {e}, trying again...")
                 time.sleep(1)
 
     return staging_df
@@ -96,7 +96,9 @@ def main():
 
     logs = sql.convert_sql_to_df(query=log_query)
 
-    game_ids = logs["Game_ID"].apply(lambda x: str(x).lstrip("00")).unique()
+    logs["Game_ID"] = logs["Game_ID"].apply(lambda x: str(x).lstrip("00"))
+
+    game_ids = logs["Game_ID"].unique()
 
     print("\nLoading play by play df...")
 

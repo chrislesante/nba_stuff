@@ -9,7 +9,40 @@ import requests
 
 pd.options.mode.chained_assignment = None
 
-START_SEASON = 2013  # most historical data can be aggregated from player logs. Team logs is mainly to simplify model prediction pipeline
+START_SEASON = 1979
+COLUMNS = [
+    "TEAM_ID",
+    "TEAM_ABBREVIATION",
+    "TEAM_NAME",
+    "GAME_ID",
+    "GAME_DATE",
+    "MATCHUP",
+    "WL",
+    "MIN",
+    "FGM",
+    "FGA",
+    "FG_PCT",
+    "FG3M",
+    "FG3A",
+    "FG3_PCT",
+    "FTM",
+    "FTA",
+    "FT_PCT",
+    "OREB",
+    "DREB",
+    "REB",
+    "AST",
+    "STL",
+    "BLK",
+    "TOV",
+    "PF",
+    "PTS",
+    "PLUS_MINUS",
+    "SEASON_YEAR",
+    "TEAM",
+    "OPPONENT",
+    "HOME/AWAY",
+]
 
 
 def scrape_game_logs(seasons):
@@ -29,10 +62,8 @@ def scrape_game_logs(seasons):
                 headers = season_json[0]["headers"]
                 data = season_json[0]["rowSet"]
                 stage_df = pd.DataFrame(columns=headers, data=data)
-                stage_df['SEASON_YEAR'] = n
-                gamelogs_df = pd.concat(
-                    [gamelogs_df, stage_df]
-                )
+                stage_df["SEASON_YEAR"] = n
+                gamelogs_df = pd.concat([gamelogs_df, stage_df])
                 time.sleep(0.6)
                 break
             except json.decoder.JSONDecodeError:
@@ -56,7 +87,7 @@ def scrape_game_logs(seasons):
 
     gamelogs_df.reset_index(drop=True, inplace=True)
 
-    return gamelogs_df
+    return gamelogs_df[COLUMNS]
 
 
 def main():
@@ -70,11 +101,13 @@ def main():
         print(f"\nGrabbing gamelogs for {season_batch} seasons...\n")
 
         gamelog_df = scrape_game_logs(season_batch)
+
+        behavior = "replace" if x == 0 else "append"
         sql.export_df_to_sql(
             gamelog_df,
             table_name="team_gamelogs",
             schema="nba_gamelogs",
-            behavior="append",
+            behavior=behavior,
         )
 
 
