@@ -1,6 +1,7 @@
 import pandas as pd
 from utility.reference import sql
 from nba_api.stats.static import teams
+from utility.lines_model.train_and_predict import fetch_predictions
 
 TEAMS = [x["abbreviation"] for x in teams.get_teams()]
 
@@ -81,11 +82,50 @@ SPLIT_COLUMNS_ENUM = {
 
 
 class LinesAnalyzer:
-    def __init__(self, lines_df: pd.DataFrame):
-        self.raw = lines_df
+    @staticmethod
+    def print_separator():
+        print()
+        print("*" * 100)
+        print()
+
+    @staticmethod
+    def create_selection_dict(methods: dict | list) -> dict:
+        selection_dict = {}
+        print()
+        if type(methods) == dict:
+            methods = methods.keys()
+
+        for n, method in enumerate(methods):
+            choice = str(n + 1)
+            selection_dict[choice] = method
+            print(choice + ". " + method)
+
+        return selection_dict
+
+    def __init__(self, historical_lines: pd.DataFrame, todays_lines: pd.DataFrame):
+        self.raw = historical_lines
         self.coverage_summary = self.__create_coverage_summary_table(self.raw)
         self.favorite_split, self.underdog_split = self.__get_coverage_splits(self.raw)
         self.over_under_splits = self.__get_over_under_splits(self.raw)
+        self.todays_lines = todays_lines
+        self.report_configs = {
+        "coverage": {
+            "dataframe": self.coverage_summary,
+            "methods": ["fav_hit_percentage", "dog_hit_percentage", "overall_hit_percentage"]
+        },
+        "favorites": {
+            "dataframe": self.favorite_split,
+            "methods": ["hit_percentage_as_favorite_away", "hit_percentage_as_favorite_home"]
+        },
+        "underdogs": {
+            "dataframe": self.underdog_split,
+            "methods": ["hit_percentage_as_underdog_away", "hit_percentage_as_underdog_home"]
+        },
+        "over_under": {
+            "dataframe": self.over_under_splits,
+            "methods": ["over_hit_home_percentage", "over_hit_away_percentage"]
+        }
+    }
 
     def __aggregate_favorites_data(self, lines_df: pd.DataFrame) -> pd.DataFrame:
         favorites_by_team_df = lines_df.copy()
@@ -301,11 +341,7 @@ class LinesAnalyzer:
 
         return ou_df_merged
 
-    def get_new_coverage_summary(lines, start_year, end_year):
-        sql.export_df_to_sql(
-            df=lines, table_name="lines", schema="general", behavior="replace"
-        )
-
+    def get_new_coverage_summary(self):
         coverage_summary = pd.DataFrame(
             columns=[
                 "team",
@@ -337,10 +373,8 @@ class LinesAnalyzer:
                         ROUND(AVG("spread")::numeric, 2) as "average_spread",
                         ROUND(stddev_samp("spread")::numeric, 2) as "std_spread",
                         COUNT(*) AS "total_games"
-                    FROM general.lines
+                    FROM nba_general.lines
                     WHERE
-                        "season"::numeric >= {str(start_year)} AND "season"::numeric <= {str(end_year)}
-                    AND
                         ((visit_team_abbrev = '{team}')
                         OR
                         (home_team_abbrev = '{team}'))
@@ -358,11 +392,14 @@ class LinesAnalyzer:
         FROM coverage_summary;"""
 
             team_summary = sql.convert_sql_to_df(
-                table_name="lines", schema="general", query=query
+                table_name="lines", schema="nba_general", query=query
             )
             coverage_summary = pd.concat([coverage_summary, team_summary])
 
-        return coverage_summary
+        self.new_coverage_report = coverage_summary
+        print(self.new_coverage_report)
+        self.new_coverage_report .to_csv("new_coverage_report.csv", index=False)
+        print("new_coverage_report.csv exported successfully!")
 
     def get_home_data(self, type: str) -> pd.DataFrame:
         at_home_df = self.raw[self.raw[type] == self.raw["home_team_abbrev"]].copy()
@@ -373,3 +410,98 @@ class LinesAnalyzer:
         away_df = self.raw[self.raw[type] == self.raw["visit_team_abbrev"]].copy()
 
         return away_df
+
+    def get_todays_lines(self):
+        self.print_separator()
+        if self.todays_lines.empty:
+            print("No lines found for today.")
+        else:
+            print(self.todays_lines)
+        self.print_separator()
+    
+
+    def choose_picks(self):
+        self.print_separator()
+        if self.todays_lines.empty:
+            print("\nSorry, there are no games to predict.\n")
+        else:
+            fetch_predictions()
+        self.print_separator()
+
+    def get_sorted_report(self, dataframe, methods):
+        self.print_separator()
+        selection_dict = self.create_selection_dict(methods)
+        choice = input("\nSelect an option to sort by: ")
+        descending = input("\nDescending or ascending order (d/return): ")
+        
+        ascending = descending.upper() != "D"
+        print(dataframe.sort_values(by=selection_dict[choice], ascending=ascending))
+        self.print_separator()
+
+    def get_coverage_report(self):
+        methods = ["fav_hit_percentage", "dog_hit_percentage", "overall_hit_percentage"]
+        self.get_sorted_report(self.coverage_summary, methods)
+
+    def get_favorite_splits(self):
+        methods = ["hit_percentage_as_favorite_away", "hit_percentage_as_favorite_home"]
+        self.get_sorted_report(self.favorite_split, methods)
+
+    def get_underdog_splits(self):
+        methods = ["hit_percentage_as_underdog_away", "hit_percentage_as_underdog_home"]
+        self.get_sorted_report(self.underdog_split, methods)
+
+    def get_over_under_splits(self):
+        methods = ["over_hit_home_percentage", "over_hit_away_percentage"]
+        self.get_sorted_report(self.over_under_splits, methods)
+    
+    def export_data(self):
+        self.coverage_summary.sort_values(by="team", inplace=True)
+        self.coverage_summary.to_csv("coverage.csv", index=False)
+        self.underdog_split.to_csv("underdog_split.csv", index=False)
+        self.favorite_split.to_csv("favorite_split.csv", index=False)
+        self.over_under_splits.to_csv("over_under_splits.csv", index=False)
+        self.todays_lines.to_csv("todays_lines.csv", index=False)
+
+        print("\nSummaries exported successfully!\n")
+    
+    def export_as_html(self):
+        html_string = (
+            """
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                        <title>DataFrames</title>
+                        </head>
+                        <body>
+                        <h1>Coverage Summary</h1>
+                        """
+            + self.coverage_summary.to_html()
+            + """
+                        <h1>Underdog Splits</h1>
+                        """
+            + self.underdog_split.to_html()
+            + """
+                        <h1>Favorite Splits</h1>
+                        """
+            + self.favorite_split.to_html()
+            + """
+                        <h1>Over Under Splits</h1>
+                        """
+            + self.over_under_splits.to_html()
+            + """
+                        <h1>Todays Lines</h1>
+                        """
+            + self.todays_lines.to_html()
+            + """
+                        </body>
+                        </html>
+                        """
+        )
+
+        with open("lines.html", "w") as f:
+            f.write(html_string)
+        
+    def update_sql_table(self):
+        sql.export_df_to_sql(self.raw, table_name='lines', schema='nba_general')
+
+        
