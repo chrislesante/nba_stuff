@@ -82,16 +82,10 @@ SPLIT_COLUMNS_ENUM = {
 
 class LinesAnalyzer:
     def __init__(self, lines_df: pd.DataFrame):
-        setattr(self, "raw", lines_df)
-        setattr(
-            self, "coverage_summary", self.__create_coverage_summary_table(lines_df)
-        )
-
-        fav_splits, dog_splits = self.__get_coverage_splits(lines_df)
-
-        setattr(self, "underdog_split", dog_splits)
-        setattr(self, "favorite_split", fav_splits)
-        setattr(self, "over_under_splits", self.__get_over_under_splits(lines_df))
+        self.raw = lines_df
+        self.coverage_summary = self.__create_coverage_summary_table(self.raw)
+        self.favorite_split, self.underdog_split = self.__get_coverage_splits(self.raw)
+        self.over_under_splits = self.__get_over_under_splits(self.raw)
 
     def __aggregate_favorites_data(self, lines_df: pd.DataFrame) -> pd.DataFrame:
         favorites_by_team_df = lines_df.copy()
