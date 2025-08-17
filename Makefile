@@ -1,6 +1,13 @@
 .PHONY: default
 default: install
 
+AWS_ACCOUNT_ID ?= $(shell aws sts get-caller-identity --query Account --output text)
+AWS_REGION ?= us-east-2
+ECR_REPOSITORY_NAME = sports/nba_stuff
+IMAGE_TAG = latest 
+
+ECR_IMAGE_URI = $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/$(ECR_REPOSITORY_NAME)
+
 REPO_PATH=$(CURDIR)/src
 PYTHON := python3.10
 
@@ -30,12 +37,6 @@ run:
 	export PYTHONPATH="$(REPO_PATH)" && \
 	$(PYTHON) src/scripts/$${script}.py
 
-locate_city:
-	@printf "\n" && \
-	printf "\nRunning /src/utility/reference/feature_engineering/location.py\n\n" && \
-	source ./.venv/bin/activate && \
-	export PYTHONPATH="$(REPO_PATH)" && \
-	$(PYTHON) src/utility/reference/feature_engineering/location.py
 
 update_logs:
 	@printf "\n" && \
@@ -65,6 +66,23 @@ lines:
 	source ./.venv/bin/activate && \
 	export PYTHONPATH="$(REPO_PATH)" && \
 	$(PYTHON) src/scripts/lines_analyzer.py
+
+push: build
+	@echo "Authenticating to ECR..."
+	# Ensure AWS CLI is configured and has ECR permissions
+	aws ecr get-login-password --region $(AWS_REGION) | tr -d "\n" | docker login --username AWS --password-stdin $(ECR_IMAGE_URI)
+	@echo "Tagging image for ECR..."
+	docker tag $(ECR_REPOSITORY_NAME):$(IMAGE_TAG) $(ECR_IMAGE_URI):$(IMAGE_TAG)
+	@echo "Pushing image to ECR: $(ECR_IMAGE_URI):$(IMAGE_TAG)"
+	docker push $(ECR_IMAGE_URI):$(IMAGE_TAG)
+	@echo "Image pushed to ECR."
+
+deploy: push
+	@echo "Updating Lambda function with new image..."
+	aws lambda update-function-code \
+		--function-name get_player_boxscores \
+		--image-uri $(ECR_IMAGE_URI):$(IMAGE_TAG)
+	@echo "Lambda function updated."
 
 clean:
 	@rm -rf ./.venv
