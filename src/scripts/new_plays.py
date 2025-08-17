@@ -79,7 +79,9 @@ def get_play_by_play_data(game_batch, columns):
 
     return staging_df
 
-
+def lambda_handler(event, context):
+    main()
+    
 def main():
     print("\nLoading gamelogs df...")
 

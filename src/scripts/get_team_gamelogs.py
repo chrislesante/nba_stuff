@@ -89,6 +89,8 @@ def scrape_game_logs(seasons):
 
     return gamelogs_df[COLUMNS]
 
+def lambda_handler(event, context):
+    main()
 
 def main():
     seasons = [n for n in range(START_SEASON, 2025)]

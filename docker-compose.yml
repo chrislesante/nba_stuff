@@ -1,0 +1,17 @@
+services:
+  refresh:
+    platform: linux/amd64
+    container_name: refresh
+    build:
+      dockerfile: Dockerfile.local
+    ports:
+      - 4040:4040
+    env_file: .env
+    environment:
+      - sql_username=$sql_username
+      - sql_port=$sql_port
+      - sql_host=$sql_host
+      - database=$database
+      - aws_rds_pass=$aws_rds_pass
+    command: ["bash", "-c", "./src/scripts/refresh.sh"]
+  

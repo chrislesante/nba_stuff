@@ -123,6 +123,9 @@ def get_current_game_ids():
 def strip_leading_zeroes(string):
     return string.lstrip("0")
 
+def lambda_handler(event, context):
+    main()
+
 
 def main():
     game_metadata = get_game_metadata_from_player_gamelogs_traditional()

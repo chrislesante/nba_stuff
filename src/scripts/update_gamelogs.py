@@ -149,6 +149,9 @@ def get_home_away(matchup):
     team, opponent, home_away = clean_matchup_column(matchup)
     return home_away
 
+def lambda_handler(event, context):
+    main()
+
 def main():
     current_gamelog_df = get_current_gamelogs()
     latest_game_date = find_latest_game_date(current_gamelog_df)

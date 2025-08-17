@@ -1,0 +1,19 @@
+FROM python:3.10.13-slim-bullseye AS base
+
+ENV PYTHONPATH=/nba_stuff/src
+
+WORKDIR /mlb_stuff
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt ./
+
+COPY .env ./
+
+RUN python3 -m pip install -r requirements.txt --no-cache-dir
+
+COPY ./src ./src
