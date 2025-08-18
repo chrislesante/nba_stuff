@@ -65,7 +65,7 @@ Here is a description of the make targets:
 
 ## /src/notebooks
 
-This is where Machine Learning analysis is performed to explore problems and investigate strategies. See (wl_team_boxscore_feature_importance.ipynb)[https://github.com/chrislesante/nba_stuff/blob/main/src/notebooks/wl_team_boxscore_feature_importance/wl_team_boxscore_feature_importance.ipynb] for an analysis on what miscelaneous/advanced metrics are predictive of winning.
+This is where Machine Learning analysis is performed to explore problems and investigate strategies. See [wl_team_boxscore_feature_importance.ipynb](https://github.com/chrislesante/nba_stuff/blob/main/src/notebooks/wl_team_boxscore_feature_importance/wl_team_boxscore_feature_importance.ipynb) for an analysis on what miscelaneous/advanced metrics are predictive of winning.
 
 ## train_and_predict.py
 
