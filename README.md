@@ -9,20 +9,20 @@ My name is Chris and I am a data engineer/analyst/scientist. This is my personal
 My database is currently comprised of two schemas: **nba_general** and **nba_gamelogs**.
 
 `nba_gamelogs`: contains seven tables
-    - **play_by_play** : contains play by play data going back to 1996 (when the NBA began recording play by play data). The data becomes significantly more robust in the 2013-2014 season, when Second-Spectrum began tracking advanced on court data. (sourced from NBA API)
-    - **player_gamelogs** : this table contains every player's individual gamelogs going back to the 1979 season (which is when the 3pt line was introduced to the NBA). If you wanted to extract all gamelogs going back to a different season, you can change the `START_SEASON` global variable in `get_all_gamelogs.py`, to the season of your choice, and run the script. (sourced from NBA API)
-    - **player_advanced_metrics** : this table contains player advanced metrics (by game) going back to the 1996 season
-    - **team_advanced_metrics** : this table contains team advanced metrics (by game) going back to the 1996 season
-    - **player_misc_metrics** : this table contains player miscellaneous game metrics such as _paint points_, _second chance points_, _fast break points_, _points off turnovers_, etc. going back to the 1996 season
-    - **team_misc_metrics** : this table contains team miscellaneous game metrics such as _paint points_, _second chance points_, _fast break points_, _points off turnovers_, etc. going back to the 1996 season
-    - **team_gamelogs** : this table contains team boxscores going back to the 2013 season. This table is primarily useful for aggregating data in the betting model's prediction pipeline.
+- **play_by_play** : contains play by play data going back to 1996 (when the NBA began recording play by play data). The data becomes significantly more robust in the 2013-2014 season, when Second-Spectrum began tracking advanced on court data. (sourced from NBA API)
+- **player_gamelogs** : this table contains every player's individual gamelogs going back to the 1979 season (which is when the 3pt line was introduced to the NBA). If you wanted to extract all gamelogs going back to a different season, you can change the `START_SEASON` global variable in `get_all_gamelogs.py`, to the season of your choice, and run the script. (sourced from NBA API)
+- **player_advanced_metrics** : this table contains player advanced metrics (by game) going back to the 1996 season
+- **team_advanced_metrics** : this table contains team advanced metrics (by game) going back to the 1996 season
+- **player_misc_metrics** : this table contains player miscellaneous game metrics such as _paint points_, _second chance points_, _fast break points_, _points off turnovers_, etc. going back to the 1996 season
+- **team_misc_metrics** : this table contains team miscellaneous game metrics such as _paint points_, _second chance points_, _fast break points_, _points off turnovers_, etc. going back to the 1996 season
+- **team_gamelogs** : this table contains team boxscores going back to the 2013 season. This table is primarily useful for aggregating data in the betting model's prediction pipeline.
 
 `nba_general`: contains five tables
-    - **players** - contains bio/career info for all players in NBA history (sourced from NBA API)
-    - **teams** - contains bio/historical info for all teams in NBA history (sourced from NBA API)
-    - **team_records** - contains info on all teams regular season and playoff W/L outcomes in NBA history
-    - **lines** - contains lines data (spread, over/under, game totals, etc.) going back to the 2017 season (sourced from rotowire).
-    - **champions** - contains all historical NBA champions along with the year they were awarded and their opponent.
+- **players** - contains bio/career info for all players in NBA history (sourced from NBA API)
+- **teams** - contains bio/historical info for all teams in NBA history (sourced from NBA API)
+- **team_records** - contains info on all teams regular season and playoff W/L outcomes in NBA history
+- **lines** - contains lines data (spread, over/under, game totals, etc.) going back to the 2017 season (sourced from rotowire).
+- **champions** - contains all historical NBA champions along with the year they were awarded and their opponent.
 
 ## Getting started
 
