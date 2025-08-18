@@ -48,15 +48,15 @@ Afterwards, there are many different _make targets_ that execute different opera
 
 Here is a description of the make targets:
 
-* `make run`: will prompt the user for a script name inside the repo to run. Once a script name is entered, that script will run.
+- `make run`: will prompt the user for a script name inside the repo to run. Once a script name is entered, that script will run.
 
-* `make update_logs`: runs **update_gamelogs.py**, which uploads new gamelogs to the **player_gamelogs** table.
+- `make update_logs`: runs **update_gamelogs.py**, which uploads new gamelogs to the **player_gamelogs** table.
 
-* `make plays`: runs **new_plays.py**, which uploads new play by play data to the **play_by_play** table.
+- `make plays`: runs **new_plays.py**, which uploads new play by play data to the **play_by_play** table.
 
-* `make revert_logs`: runs **revert_gamelogs.py**, which will revert the gamelogs table to a previous version of it from an inputted flatfile path.
+- `make revert_logs`: runs **revert_gamelogs.py**, which will revert the gamelogs table to a previous version of it from an inputted flatfile path.
 
-* `make lines`: runs the **lines_analyzer.py** script. This is an interactive script that pulls betting data from rotowire and automates high-level analysis as well as providing options for varying data exports.
+- `make lines`: runs the **lines_analyzer.py** script. This is an interactive script that pulls betting data from rotowire and automates high-level analysis as well as providing options for varying data exports.
 
 
 ## Noteworthy
