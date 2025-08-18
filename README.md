@@ -63,6 +63,10 @@ Here is a description of the make targets:
 
 `utility/lines_model/datamodel.py` was primarily built as an exercise in object-oriented programming and is only useful for high-level analysis. `lines_analyzer.py` can be used to make over/under and spread predictions powered by the Sci-Kit Learn module. The `fetch_predictions` function can be found in `utility/lines_model/train_and_predict.py`
 
+## /src/notebooks
+
+This is where Machine Learning analysis is performed to explore problems and investigate strategies. See (wl_team_boxscore_feature_importance.ipynb)[https://github.com/chrislesante/nba_stuff/blob/main/src/notebooks/wl_team_boxscore_feature_importance/wl_team_boxscore_feature_importance.ipynb] for an analysis on what miscelaneous/advanced metrics are predictive of winning.
+
 ## train_and_predict.py
 
 This script aggregates data by joining the **player_gamelogs**, **lines**, and **players** tables to train a Linear regression model to predict game point totals and point differentials for the purpose of making Over/Under and spread bets. It gathers prediction data by making an api call to find the current day's active players, cross-referencing that output with the injury report found on basketball-reference, and aggregating data using both the database and additional requests to the API.
