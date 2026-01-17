@@ -9,7 +9,7 @@ import requests
 
 pd.options.mode.chained_assignment = None
 
-START_SEASON = 1979 # The 3pt line was introduced into the NBA in the 1979 season
+START_SEASON = 1994 # The 3pt line was introduced into the NBA in the 1979 season
 PLAYER_DF = sql.convert_sql_to_df("players", "nba_general")
 HEADERS = playergamelog.PlayerGameLog(
     player_id=PLAYER_DF.loc[0, "PERSON_ID"]
