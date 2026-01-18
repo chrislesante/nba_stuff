@@ -35,7 +35,7 @@ MONTHS = {
     "DEC": 12,
 }
 
-def find_latest_game_date(current_gamelog_df):
+def find_latest_game_date():
     log.info("Finding last gamedate...")
 
     query = """
