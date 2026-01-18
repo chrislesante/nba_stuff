@@ -161,18 +161,14 @@ def main():
 
     new_logs_df = new_logs_df[HEADERS]
 
-    updated_logs = pd.concat([current_gamelog_df, new_logs_df])
-
-    updated_logs.drop_duplicates(inplace=True)
-
-    del current_gamelog_df
+    new_logs_df.drop_duplicates(inplace=True)
 
     log.info("Exporting to sql db...")
     sql.export_df_to_sql(
-        df=updated_logs,
+        df=new_logs_df,
         table_name="player_gamelogs",
         schema="nba_gamelogs",
-        behavior="replace",
+        behavior="append",
     )
     log.info("Export successful.")
 
