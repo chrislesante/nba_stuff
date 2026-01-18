@@ -67,6 +67,11 @@ lines:
 	export PYTHONPATH="$(REPO_PATH)" && \
 	$(PYTHON) src/scripts/lines_analyzer.py
 
+build:
+	@echo "Building Docker image: $(ECR_REPOSITORY_NAME):$(IMAGE_TAG)"
+	docker build -t $(ECR_REPOSITORY_NAME):$(IMAGE_TAG) .
+	@echo "Docker image built locally."
+
 push: build
 	@echo "Authenticating to ECR..."
 	# Ensure AWS CLI is configured and has ECR permissions
@@ -80,7 +85,7 @@ push: build
 deploy: push
 	@echo "Updating Lambda function with new image..."
 	aws lambda update-function-code \
-		--function-name get_player_boxscores \
+		--function-name refresh_nba_data \
 		--image-uri $(ECR_IMAGE_URI):$(IMAGE_TAG)
 	@echo "Lambda function updated."
 
