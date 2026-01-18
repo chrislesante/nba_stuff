@@ -38,7 +38,10 @@ MONTHS = {
 
 def get_current_gamelogs():
     log.info("Grabbing current gamelogs...")
-    return sql.convert_sql_to_df(table_name="player_gamelogs", schema="nba_gamelogs")
+    query = """
+    SELECT DISTINCT "GAME_DATE" FROM nba_gamelogs.player_gamelogs ORDER BY "GAME_DATE" DESC;
+    """
+    return sql.convert_sql_to_df(query=query)
 
 
 def find_latest_game_date(current_gamelog_df):
@@ -149,8 +152,10 @@ def get_home_away(matchup):
     team, opponent, home_away = clean_matchup_column(matchup)
     return home_away
 
+
 def lambda_handler(event, context):
     main()
+
 
 def main():
     current_gamelog_df = get_current_gamelogs()
