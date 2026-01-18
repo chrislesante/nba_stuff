@@ -3,7 +3,7 @@ pandas
 requests
 datetime
 nba_api
-psycopg==3.2.3
+psycopg[binary]==3.2.3
 python-json-logger==3.2.1
 python-dotenv==1.0.1
 scikit-learn==1.6.1
