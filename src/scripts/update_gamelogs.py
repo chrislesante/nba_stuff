@@ -35,20 +35,17 @@ MONTHS = {
     "DEC": 12,
 }
 
-
-def get_current_gamelogs():
-    log.info("Grabbing current gamelogs...")
-    query = """
-    SELECT DISTINCT "GAME_DATE" FROM nba_gamelogs.player_gamelogs ORDER BY "GAME_DATE" DESC;
-    """
-    return sql.convert_sql_to_df(query=query)
-
-
 def find_latest_game_date(current_gamelog_df):
     log.info("Finding last gamedate...")
 
+    query = """
+    SELECT MAX("GAME_DATE") as "GAME_DATE" 
+    FROM nba_gamelogs.player_gamelogs;
+    """
+    game_date = sql.convert_sql_to_df(query=query)
+
     last_date = pd.to_datetime(
-        current_gamelog_df["GAME_DATE"].max()
+        game_date["GAME_DATE"].max()
     ).date() + datetime.timedelta(days=1)
     last_date = str(last_date)
     convert = last_date.split("-")
@@ -158,8 +155,7 @@ def lambda_handler(event, context):
 
 
 def main():
-    current_gamelog_df = get_current_gamelogs()
-    latest_game_date = find_latest_game_date(current_gamelog_df)
+    latest_game_date = find_latest_game_date()
     new_logs = get_new_logs(latest_game_date)
     new_logs_df = convert_new_logs_to_df(new_logs)
 
