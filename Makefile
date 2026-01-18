@@ -85,6 +85,7 @@ push: build
 deploy: push
 	@echo "Updating Lambda function with new image..."
 	aws lambda update-function-code \
+		--region $(AWS_REGION) \
 		--function-name refresh_nba_data \
 		--image-uri $(ECR_IMAGE_URI):$(IMAGE_TAG)
 	@echo "Lambda function updated."
