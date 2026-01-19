@@ -417,6 +417,7 @@ class LinesAnalyzer:
             print("No lines found for today.")
         else:
             print(self.todays_lines)
+            self.todays_lines.to_csv("todays_lines.csv", index=False)
         self.print_separator()
     
 

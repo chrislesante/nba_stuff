@@ -8,15 +8,19 @@ from utility.reference import sql, injury_scraper as inj
 from sklearn.linear_model import LinearRegression
 
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
-    'Content-Type': 'application/json',
-    'Referer': 'google.com'
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
+    "Content-Type": "application/json",
+    "Referer": "google.com",
 }
 
 
 def get_x_y(training_data: pd.DataFrame, model, window_ngames: int = 3):
     training_data.replace(r"^\s*$", np.nan, regex=True, inplace=True)
     training_data.dropna(inplace=True)
+    training_data = training_data.loc[
+        (training_data["HOME_TEAM_GAMES_PLAYED"] >= 5)
+        & (training_data["AWAY_TEAM_GAMES_PLAYED"] >= 5)
+    ]
 
     predictors = [
         f"HOME_ACTIVE_PLAYERS_LAST_{window_ngames}_PPG",
@@ -84,7 +88,8 @@ def get_todays_lineups():
     team_columns = ["teamId", "teamAbbreviation"]
 
     lineups = requests.get(
-        f"https://stats.nba.com/js/data/leaders/00_daily_lineups_{year}{month}{day}.json", headers=HEADERS
+        f"https://stats.nba.com/js/data/leaders/00_daily_lineups_{year}{month}{day}.json",
+        headers=HEADERS,
     )
 
     staging_df = pd.DataFrame.from_records(json.loads(lineups.content)["games"])
@@ -220,7 +225,7 @@ def filter_and_align_x_data(merged_df, todays_lines, window_ngames: int = 3):
 
 
 def fetch_new_x_data():
-    print('\nGetting new X data...')
+    print("\nGetting new X data...")
     active_player_agg_data = get_active_player_data()
     team_agg_data = sql.agg_team_new_x_data()
     todays_lines = get_todays_lines()
@@ -231,16 +236,16 @@ def fetch_new_x_data():
 
 
 def get_ou_predictions(training_data, new_x):
-    print('\nTraining OU model...')
+    print("\nTraining OU model...")
     reg_out_linear_ou, predictors = train_model(training_data, "ou")
-    print('\nMaking OU predictions...')
+    print("\nMaking OU predictions...")
     return reg_out_linear_ou.predict(new_x[list(predictors)])
 
 
 def get_lines_predictions(training_data, new_x):
-    print('\nTraining lines model...')
+    print("\nTraining lines model...")
     reg_out_linear_lines, predictors = train_model(training_data, "lines")
-    print('\nMaking lines predictions...')
+    print("\nMaking lines predictions...")
     return reg_out_linear_lines.predict(new_x[list(predictors)])
 
 
@@ -319,22 +324,23 @@ def merge_data(team_data, player_data):
 
 def fetch_predictions():
     today = dt.date.today()
-    print('\nGrabbing training data...')
+    print("\nGrabbing training data...")
     training_data = sql.fetch_aggregate_betting_data()
     new_x_data = fetch_new_x_data()
 
     ou_predictions = get_ou_predictions(training_data, new_x_data)
     lines_predictions = get_lines_predictions(training_data, new_x_data)
 
-    new_x_data['PREDICTED_POINT_TOTAL'] = ou_predictions
-    new_x_data['PREDICTED_DIFF'] = lines_predictions
+    new_x_data["PREDICTED_POINT_TOTAL"] = ou_predictions
+    new_x_data["PREDICTED_DIFF"] = lines_predictions
 
-    lines_pred_df = new_x_data[['homeTeam', 'awayTeam', 'LINE', 'PREDICTED_DIFF']]
-    ou_pred_df = new_x_data[['homeTeam', 'awayTeam', 'OVER_UNDER', 'PREDICTED_POINT_TOTAL']]
+    lines_pred_df = new_x_data[["homeTeam", "awayTeam", "LINE", "PREDICTED_DIFF"]]
+    ou_pred_df = new_x_data[
+        ["homeTeam", "awayTeam", "OVER_UNDER", "PREDICTED_POINT_TOTAL"]
+    ]
 
     print(f"OU Predictions: \n\n{ou_pred_df}")
     print(f"\n\nLINE Predictions: \n\n{lines_pred_df}")
 
     ou_pred_df.to_csv(f"ou_preds_{today}.csv", index=False)
     lines_pred_df.to_csv(f"lines_preds_{today}.csv", index=False)
-

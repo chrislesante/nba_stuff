@@ -34,6 +34,17 @@ COLUMNS = [
     "actionId",
 ]
 
+HTTP_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+    "Referer": "https://www.nba.com",
+    "Origin": "https://www.nba.com",
+    "Accept": "application/json, text/plain, */*",
+    "x-nba-stats-origin": "stats",
+    "Connection": "keep-alive",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Language": "en-US;q=0.9,en;q=0.7",
+}
+
 
 def get_play_by_play_data(game_batch, columns):
 
@@ -48,9 +59,9 @@ def get_play_by_play_data(game_batch, columns):
             )
             try:
                 try:
-                    play = pp.PlayByPlayV3(game_id=row['Game_ID'])
+                    play = pp.PlayByPlayV3(game_id=row['Game_ID'], headers=HTTP_HEADERS)
                 except IndexError:
-                    play = pp.PlayByPlayV3(game_id=f"00{row['Game_ID']}")
+                    play = pp.PlayByPlayV3(game_id=f"00{row['Game_ID']}", headers=HTTP_HEADERS)
 
                 new_plays = pd.DataFrame(
                             columns=columns, data=play.play_by_play.get_dict()["data"]
