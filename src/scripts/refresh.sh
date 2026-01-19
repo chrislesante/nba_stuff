@@ -14,13 +14,13 @@ fi
 echo "[${REQUEST_ID}] update_gamelogs.py finished."
 
 # # update team_gamelogs
-# echo "[${REQUEST_ID}] Running get_team_gamelogs.py..."
-# python3 src/scripts/get_team_gamelogs.py
-# if [ $? -ne 0 ]; then
-#     echo "[${REQUEST_ID}] ERROR: get_team_gamelogs.py failed. Exiting."
-#     exit 1
-# fi
-# echo "[${REQUEST_ID}] get_team_gamelogs.py finished."
+echo "[${REQUEST_ID}] Running get_team_gamelogs.py..."
+python3 src/scripts/get_team_gamelogs.py
+if [ $? -ne 0 ]; then
+    echo "[${REQUEST_ID}] ERROR: get_team_gamelogs.py failed. Exiting."
+    exit 1
+fi
+echo "[${REQUEST_ID}] get_team_gamelogs.py finished."
 
 # update play_by_play
 echo "[${REQUEST_ID}] Running new_plays.py..."
