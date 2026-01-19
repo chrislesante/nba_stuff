@@ -72,6 +72,7 @@ def scrape_game_logs(seasons):
             except requests.exceptions.ReadTimeout:
                 print("\n\t\tError, trying again...")
                 time.sleep(3)
+    gamelogs_df.dropna(inplace=True)
 
     gamelogs_df["TEAM"] = gamelogs_df["MATCHUP"].apply(lambda x: x.split()[0])
     gamelogs_df["OPPONENT"] = gamelogs_df["MATCHUP"].apply(lambda x: x.split()[-1])
@@ -89,11 +90,26 @@ def scrape_game_logs(seasons):
 
     return gamelogs_df[COLUMNS]
 
+def get_latest_season():
+    query = """
+    SELECT MAX("SEASON_YEAR") as "SEASON" FROM nba_gamelogs.team_gamelogs    
+    """
+    return sql.convert_sql_to_df(query=query)["SEASON"].max()
+
 def lambda_handler(event, context):
     main()
 
+def drop_current_season_rows(season_year):
+    statement = f"DELETE FROM nba_gamelogs.team_gamelogs WHERE \"SEASON_YEAR\" = {season_year}"
+    sql.execute_database_operations(statement)
+
 def main():
-    seasons = [n for n in range(START_SEASON, 2025)]
+    try:
+        start_season = get_latest_season()
+        drop_current_season_rows(start_season)
+    except Exception:
+        start_season = START_SEASON
+    seasons = [n for n in range(start_season, 2026)]
     number_of_batches = math.ceil(len(seasons) / 5)
 
     for x in range(0, number_of_batches):
@@ -104,7 +120,7 @@ def main():
 
         gamelog_df = scrape_game_logs(season_batch)
 
-        behavior = "replace" if x == 0 else "append"
+        behavior = "replace" if x == 0 and start_season == START_SEASON else "append"
         sql.export_df_to_sql(
             gamelog_df,
             table_name="team_gamelogs",
