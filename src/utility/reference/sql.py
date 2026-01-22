@@ -24,6 +24,8 @@ def get_connection():
 def execute_database_operations(statement: str):
     with get_connection().connect() as con:
         result = con.execute(text(statement))
+        con.commit() 
+
 
 def export_df_to_sql(
     df: pd.DataFrame,
