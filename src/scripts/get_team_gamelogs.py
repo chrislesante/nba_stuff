@@ -1,4 +1,5 @@
 from nba_api.stats.endpoints.teamgamelogs import TeamGameLogs as tgl
+from nba_api.stats.static import teams
 import pandas as pd
 import numpy as np
 import time
@@ -44,16 +45,7 @@ COLUMNS = [
     "HOME/AWAY",
 ]
 
-HTTP_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-    "Referer": "https://www.nba.com",
-    "Origin": "https://www.nba.com",
-    "Accept": "application/json, text/plain, */*",
-    "x-nba-stats-origin": "stats",
-    "Connection": "keep-alive",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Accept-Language": "en-US;q=0.9,en;q=0.7",
-}
+NBA_TEAM_IDS = pd.DataFrame.from_records(teams.get_teams())["id"].to_list()
 
 
 def scrape_game_logs(seasons):
@@ -67,9 +59,9 @@ def scrape_game_logs(seasons):
 
         for attempt in range(0, 5):
             try:
-                season_json = tgl(season_nullable=season_string_param, headers=HTTP_HEADERS).get_dict()[
-                    "resultSets"
-                ]
+                season_json = tgl(
+                    season_nullable=season_string_param
+                ).get_dict()["resultSets"]
                 headers = season_json[0]["headers"]
                 data = season_json[0]["rowSet"]
                 stage_df = pd.DataFrame(columns=headers, data=data)
@@ -97,9 +89,12 @@ def scrape_game_logs(seasons):
         by=["GAME_DATE", "TEAM_ABBREVIATION"], ascending=False, inplace=True
     )
 
+    gamelogs_df = gamelogs_df.loc[gamelogs_df["TEAM_ID"].isin(NBA_TEAM_IDS)]
+
     gamelogs_df.reset_index(drop=True, inplace=True)
 
     return gamelogs_df[COLUMNS]
+
 
 def get_latest_season():
     query = """
@@ -107,12 +102,17 @@ def get_latest_season():
     """
     return sql.convert_sql_to_df(query=query)["SEASON"].max()
 
+
 def lambda_handler(event, context):
     main()
 
+
 def drop_current_season_rows(season_year):
-    statement = f"DELETE FROM nba_gamelogs.team_gamelogs WHERE \"SEASON_YEAR\" = {season_year}"
+    statement = (
+        f'DELETE FROM nba_gamelogs.team_gamelogs WHERE "SEASON_YEAR" = {season_year}'
+    )
     sql.execute_database_operations(statement)
+
 
 def main():
     try:
