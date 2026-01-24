@@ -13,6 +13,15 @@ if [ $? -ne 0 ]; then
 fi
 echo "[${REQUEST_ID}] update_gamelogs.py finished."
 
+# update lines
+echo "[${REQUEST_ID}] Running lines_analyzer.py..."
+python3 src/scripts/lines_analyzer.py
+if [ $? -ne 0 ]; then
+    echo "[${REQUEST_ID}] ERROR: lines_analyzer.py failed. Exiting."
+    exit 1
+fi
+echo "[${REQUEST_ID}] update_gamelogs.py finished."
+
 # # update team_gamelogs
 echo "[${REQUEST_ID}] Running get_team_gamelogs.py..."
 python3 src/scripts/get_team_gamelogs.py
@@ -22,14 +31,14 @@ if [ $? -ne 0 ]; then
 fi
 echo "[${REQUEST_ID}] get_team_gamelogs.py finished."
 
-# update play_by_play
-echo "[${REQUEST_ID}] Running new_plays.py..."
-python3 src/scripts/new_plays.py
-if [ $? -ne 0 ]; then
-    echo "[${REQUEST_ID}] ERROR: new_plays.py failed. Exiting."
-    exit 1
-fi
-echo "[${REQUEST_ID}] new_plays.py finished."
+# # update play_by_play
+# echo "[${REQUEST_ID}] Running new_plays.py..."
+# python3 src/scripts/new_plays.py
+# if [ $? -ne 0 ]; then
+#     echo "[${REQUEST_ID}] ERROR: new_plays.py failed. Exiting."
+#     exit 1
+# fi
+# echo "[${REQUEST_ID}] new_plays.py finished."
 
 # update misc metrics
 # echo "[${REQUEST_ID}] Running get_misc_metrics_logs.py..."
