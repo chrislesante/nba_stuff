@@ -37,11 +37,11 @@ MONTHS = {
 HTTP_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
     "Referer": "https://www.nba.com",
-    "Origin": "https://www.nba.com",
-    "Accept": "application/json, text/plain, */*",
-    "x-nba-stats-origin": "stats",
-    "Connection": "keep-alive",
-    "Accept-Encoding": "gzip, deflate, br",
+    # "Origin": "https://www.nba.com",
+    # "Accept": "application/json, text/plain, */*",
+    # "x-nba-stats-origin": "stats",
+    # "Connection": "keep-alive",
+    # "Accept-Encoding": "gzip, deflate, br",
     "Accept-Language": "en-US;q=0.9,en;q=0.7",
 }
 
@@ -80,7 +80,7 @@ def get_new_logs(last_game_date):
                 log.info("Grabbing gamelogs", player_name=x["full_name"])
                 new_game_logs.append(
                     playergamelog.PlayerGameLog(
-                        player_id=x["id"], date_from_nullable=last_game_date, headers=HTTP_HEADERS
+                        player_id=x["id"], date_from_nullable=last_game_date, # headers=HTTP_HEADERS
                     )
                 )
                 time.sleep(0.400)

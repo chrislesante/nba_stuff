@@ -157,7 +157,7 @@ def get_active_player_data():
     )
 
 
-def filter_and_align_x_data(merged_df, todays_lines, window_ngames: int = 3):
+def filter_and_align_x_data(merged_df: pd.DataFrame, todays_lines: pd.DataFrame, window_ngames: int = 3):
     window_ngames = str(window_ngames)
     merged_columns_enum = {
         "SEASON_PPG": "ACTIVE_PLAYERS_SEASON_PPG",
@@ -218,8 +218,10 @@ def filter_and_align_x_data(merged_df, todays_lines, window_ngames: int = 3):
     away_df.rename(merged_columns_enum, axis=1, inplace=True)
     away_df = away_df.add_prefix("AWAY_")
 
-    todays_lines = todays_lines.merge(home_df, left_on="homeTeam", right_on="HOME_TEAM")
-    todays_lines = todays_lines.merge(away_df, left_on="awayTeam", right_on="AWAY_TEAM")
+
+
+    todays_lines = todays_lines.merge(home_df, left_on="homeTeam", right_on="HOME_TEAM", how="left")
+    todays_lines = todays_lines.merge(away_df, left_on="awayTeam", right_on="AWAY_TEAM", how="left")
 
     return todays_lines[keep_columns]
 
@@ -342,5 +344,3 @@ def fetch_predictions():
     print(f"OU Predictions: \n\n{ou_pred_df}")
     print(f"\n\nLINE Predictions: \n\n{lines_pred_df}")
 
-    ou_pred_df.to_csv(f"ou_preds_{today}.csv", index=False)
-    lines_pred_df.to_csv(f"lines_preds_{today}.csv", index=False)
