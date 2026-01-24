@@ -503,6 +503,6 @@ class LinesAnalyzer:
             f.write(html_string)
         
     def update_sql_table(self):
-        sql.export_df_to_sql(self.raw, table_name='lines', schema='nba_general')
+        sql.export_df_to_sql(self.raw, table_name='lines', schema='nba_general', behavior='replace')
 
         

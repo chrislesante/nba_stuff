@@ -1,8 +1,11 @@
 from utility.lines_model.datamodel import LinesAnalyzer
-from utility.reference import sql
+from dotenv import load_dotenv
 import pandas as pd
+import os
 import json
 import requests
+
+load_dotenv()
 
 pd.options.display.max_rows = 999
 pd.options.display.max_columns = 999
@@ -78,6 +81,11 @@ def main():
 
     lines = process_lines_data(historical_lines, todays_lines)
 
+    lines.update_sql_table()
+
+    if os.getenv("env") != 'local':
+        again = 'n'
+
     while again.upper() == "Y":
         methods = {
                 "Get today's lines": lines.get_todays_lines,
@@ -88,7 +96,6 @@ def main():
                 "Get over/under splits": lines.get_over_under_splits,
                 "Export all reports": lines.export_data,
                 "Export Tables as HTML": lines.export_as_html,
-                "Update Lines SQL table": lines.update_sql_table,
                 "Get new coverage summary": lines.get_new_coverage_summary,
                 "Exit": None,
             }
@@ -97,7 +104,7 @@ def main():
         valid_selections = selection_dict.keys()
         choice = input("\nSelect an option: ")
 
-        if choice not in valid_selections:
+        if (choice not in valid_selections):
             print("\nPlease select a valid selection\n")
         elif selection_dict[choice] == "Exit":
             confirm = input("\nAre you sure? (y/return) ")
