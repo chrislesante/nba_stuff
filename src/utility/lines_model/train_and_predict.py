@@ -157,7 +157,9 @@ def get_active_player_data():
     )
 
 
-def filter_and_align_x_data(merged_df: pd.DataFrame, todays_lines: pd.DataFrame, window_ngames: int = 3):
+def filter_and_align_x_data(
+    merged_df: pd.DataFrame, todays_lines: pd.DataFrame, window_ngames: int = 3
+):
     window_ngames = str(window_ngames)
     merged_columns_enum = {
         "SEASON_PPG": "ACTIVE_PLAYERS_SEASON_PPG",
@@ -218,10 +220,12 @@ def filter_and_align_x_data(merged_df: pd.DataFrame, todays_lines: pd.DataFrame,
     away_df.rename(merged_columns_enum, axis=1, inplace=True)
     away_df = away_df.add_prefix("AWAY_")
 
-
-
-    todays_lines = todays_lines.merge(home_df, left_on="homeTeam", right_on="HOME_TEAM", how="left")
-    todays_lines = todays_lines.merge(away_df, left_on="awayTeam", right_on="AWAY_TEAM", how="left")
+    todays_lines = todays_lines.merge(
+        home_df, left_on="homeTeam", right_on="HOME_TEAM", how="left"
+    )
+    todays_lines = todays_lines.merge(
+        away_df, left_on="awayTeam", right_on="AWAY_TEAM", how="left"
+    )
 
     return todays_lines[keep_columns]
 
@@ -255,7 +259,9 @@ def get_todays_lines():
     todays_lines_content = requests.get(
         "https://www.rotowire.com/betting/nba/tables/nba-games.php?"
     ).content
-    todays_line_df = pd.DataFrame.from_records(json.loads(todays_lines_content))
+    todays_line_df = pd.DataFrame.from_records(json.loads(todays_lines_content)).dropna(
+        subset=["hardrock_spread"]
+    )
 
     todays_line_df["homeTeam"] = todays_line_df.loc[
         todays_line_df["homeAway"] == "home", "abbr"
@@ -343,4 +349,3 @@ def fetch_predictions():
 
     print(f"OU Predictions: \n\n{ou_pred_df}")
     print(f"\n\nLINE Predictions: \n\n{lines_pred_df}")
-

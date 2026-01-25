@@ -107,7 +107,7 @@ class LinesAnalyzer:
         self.coverage_summary = self.__create_coverage_summary_table(self.raw)
         self.favorite_split, self.underdog_split = self.__get_coverage_splits(self.raw)
         self.over_under_splits = self.__get_over_under_splits(self.raw)
-        self.todays_lines = todays_lines
+        self.todays_lines = todays_lines.dropna()
         self.report_configs = {
         "coverage": {
             "dataframe": self.coverage_summary,
