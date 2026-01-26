@@ -313,6 +313,7 @@ def merge_data(team_data, player_data):
 
     for x in ["LAST_GAME_DATE_HOME", "LAST_GAME_DATE_AWAY"]:
         merged[x] = pd.to_datetime(merged[x])
+        merged[x] = merged[x].dt.date
 
     merged["TEAM_2ND_OF_B2B"] = ""
     for n, row in merged.iterrows():
